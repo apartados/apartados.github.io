@@ -1,0 +1,91 @@
+/* ---------- Páginas legales ---------- */
+.legal-main {
+  width: min(100% - 36px, 900px);
+  margin: 0 auto;
+  padding: 128px 0 70px;
+}
+
+.legal-head { margin-bottom: 26px; }
+.legal-head h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1.05;
+}
+.legal-updated {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--amber);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.legal-card {
+  border-radius: var(--radius);
+  padding: clamp(24px, 4vw, 46px);
+}
+
+.legal-notice {
+  margin-bottom: 26px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed rgba(255, 181, 71, 0.45);
+  background: rgba(255, 140, 26, 0.09);
+  color: var(--cream);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.legal-card h2 {
+  margin: 30px 0 12px;
+  font-size: 1.2rem;
+  color: var(--white);
+}
+.legal-card h2:first-of-type { margin-top: 0; }
+
+.legal-card h3 {
+  margin: 22px 0 8px;
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+.legal-card p, .legal-card li {
+  font-size: 0.96rem;
+  line-height: 1.75;
+  color: rgba(242, 226, 196, 0.85);
+}
+.legal-card p { margin: 0 0 12px; }
+.legal-card ul, .legal-card ol { margin: 0 0 14px; padding-left: 22px; display: grid; gap: 7px; }
+.legal-card li::marker { color: var(--orange-2); }
+.legal-card a { color: var(--gold); text-decoration: underline; }
+
+.legal-card strong { color: var(--white); }
+
+.legal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+@media (max-width: 720px) {
+  .legal-main { padding-top: 108px; }
+
+  .nav__links--static {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    flex-direction: row;
+    padding: 0;
+    background: none;
+    border: 0;
+    backdrop-filter: none;
+    gap: 4px;
+  }
+  .nav__links--static a { padding: 9px 12px; font-size: 0.9rem; }
+}
