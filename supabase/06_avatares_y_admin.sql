@@ -84,7 +84,11 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.rol is distinct from old.rol and not public.is_master() then
+  -- Solo se protege cuando hay un usuario de la app (auth.uid()).
+  -- Sin sesión (SQL Editor / service_role) se permite para administrar.
+  if new.rol is distinct from old.rol
+     and auth.uid() is not null
+     and not public.is_master() then
     new.rol := old.rol;
   end if;
   return new;
