@@ -413,8 +413,10 @@
 
   function qrPayload() {
     const dir = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-    const nombre = encodeURIComponent(profile.nombre || "");
-    return `${dir}verificar.html?t=${profile.qr_token}&n=${nombre}`;
+    const nombre = profile.nombre || "";
+    const url = `${dir}verificar.html?t=${profile.qr_token}&n=${encodeURIComponent(nombre)}`;
+    // Texto visible al escanear: nombre y apellido primero, y la URL de verificación
+    return `APARTADOS 2.0\nPARTICIPANTE: ${nombre}\n${url}`;
   }
 
   function paintQr() {
