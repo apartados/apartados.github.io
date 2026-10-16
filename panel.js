@@ -37,7 +37,12 @@
     pagoNote: document.getElementById("pagoNote"),
     pagosList: document.getElementById("pagosList"),
     pagosBadge: document.getElementById("pagosBadge"),
-    staffCard: document.getElementById("staffCard"),
+    pagoEstado: document.getElementById("pagoEstado"),
+    panelBurger: document.getElementById("panelBurger"),
+    panelSide: document.getElementById("panelSide"),
+    panelOverlay: document.getElementById("panelOverlay"),
+    sideStaff: document.getElementById("sideStaff"),
+    staffCard: document.getElementById("sec-organizadores"),
     staffText: document.getElementById("staffText"),
   };
 
@@ -70,6 +75,7 @@
   /* ---------------- Sesión ---------------- */
   async function init() {
     fillBanks();
+    initSide();
     const { data } = await sb.auth.getSession();
     await render(data.session);
 
@@ -84,6 +90,8 @@
       profile = null;
       els.userEmail.textContent = "";
       els.logoutBtn.hidden = true;
+      els.panelBurger.classList.remove("is-visible");
+      closeSide();
       show(els.login);
       return;
     }
@@ -91,6 +99,7 @@
     currentUser = session.user;
     els.userEmail.textContent = session.user.email;
     els.logoutBtn.hidden = false;
+    els.panelBurger.classList.add("is-visible");
     show(els.loading);
 
     const { data, error } = await sb
@@ -139,9 +148,10 @@
 
     const staff = profile.rol === "admin" || profile.rol === "master";
     els.staffCard.hidden = !staff;
+    els.sideStaff.hidden = !staff;
     if (staff) {
       els.staffText.textContent =
-        "Eres organizador. El panel de organizadores (equipos, habitaciones y control de comidas) se habilita en la siguiente fase.";
+        "Eres organizador. El panel de organizadores (pagos, equipos, habitaciones y control de comidas) se habilita en la siguiente fase.";
     }
   }
 
@@ -309,12 +319,40 @@
   }
 
   async function paintPagos(pagos) {
-    const aprobadas = new Set(pagos.filter((p) => p.estado === "aprobado").map((p) => p.parte));
-    els.pagosBadge.textContent = `${aprobadas.size} / 2`;
+    const porParte = { 1: null, 2: null };
+    pagos.forEach((p) => {
+      if (!porParte[p.parte] || p.estado === "aprobado") porParte[p.parte] = p;
+    });
+    const verificados = [1, 2].filter((n) => porParte[n] && porParte[n].estado === "aprobado").length;
+    els.pagosBadge.textContent = `${verificados} de 2 verificados`;
 
     // sugiere la parte que falta por pagar
-    if (aprobadas.has(1) && !aprobadas.has(2)) els.pagoParte.value = "2";
-    else if (!aprobadas.has(1)) els.pagoParte.value = "1";
+    if (!porParte[1]) els.pagoParte.value = "1";
+    else if (!porParte[2]) els.pagoParte.value = "2";
+
+    // mensaje de estado por parte
+    const estadoTexto = {
+      aprobado: ["Verificado", "Tu pago fue confirmado", "✓"],
+      en_revision: ["Por verificar", "Recibido, esperando confirmación", "⏳"],
+      rechazado: ["Rechazado", "Revisa los datos y vuelve a enviarlo", "✕"],
+      sin_enviar: ["Sin enviar", "Aún no has subido esta parte", "–"],
+    };
+
+    els.pagoEstado.innerHTML = [1, 2]
+      .map((n) => {
+        const p = porParte[n];
+        const key = p ? p.estado : "sin_enviar";
+        const [titulo, detalle, icono] = estadoTexto[key];
+        return `
+          <div class="pago-pill pago-pill--${key}">
+            <span class="pago-pill__icon" aria-hidden="true">${icono}</span>
+            <span class="pago-pill__text">
+              <strong>Parte ${n}: ${titulo}</strong>
+              <small>${detalle}</small>
+            </span>
+          </div>`;
+      })
+      .join("");
 
     if (!pagos.length) {
       els.pagosList.innerHTML = '<p class="pagos-empty">Todavía no has enviado ningún comprobante.</p>';
@@ -322,7 +360,7 @@
     }
 
     const tipoLabel = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
-    const estadoLabel = { en_revision: "En revisión", aprobado: "Aprobado", rechazado: "Rechazado" };
+    const estadoLabel = { en_revision: "Por verificar", aprobado: "Verificado", rechazado: "Rechazado" };
 
     els.pagosList.innerHTML = pagos
       .map((p) => {
@@ -440,6 +478,53 @@
     await loadPagos();
     setTimeout(() => setMessage(els.pagoNote, ""), 4000);
   });
+
+  /* ---------------- Menú lateral ---------------- */
+  function openSide() {
+    els.panelSide.classList.add("is-open");
+    els.panelOverlay.hidden = false;
+    els.panelBurger.setAttribute("aria-expanded", "true");
+  }
+  function closeSide() {
+    els.panelSide.classList.remove("is-open");
+    els.panelOverlay.hidden = true;
+    els.panelBurger.setAttribute("aria-expanded", "false");
+  }
+
+  function initSide() {
+    els.panelBurger.addEventListener("click", () => {
+      els.panelSide.classList.contains("is-open") ? closeSide() : openSide();
+    });
+    els.panelOverlay.addEventListener("click", closeSide);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSide();
+    });
+
+    const links = [...els.panelSide.querySelectorAll("a")];
+    const sections = links.map((a) => document.getElementById(a.dataset.target)).filter(Boolean);
+
+    links.forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        const target = document.getElementById(a.dataset.target);
+        if (!target) return;
+        closeSide();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", `#${a.dataset.target}`);
+      });
+    });
+
+    const spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          links.forEach((l) => l.classList.toggle("active", l.dataset.target === entry.target.id));
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+    );
+    sections.forEach((s) => spy.observe(s));
+  }
 
   /* ---------------- Login ---------------- */
   els.loginForm.addEventListener("submit", async (event) => {

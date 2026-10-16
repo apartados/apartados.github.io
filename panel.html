@@ -27,6 +27,9 @@
     <div class="panel-top__right">
       <span class="panel-top__email" id="userEmail"></span>
       <button class="btn btn--ghost btn--sm" id="logoutBtn" hidden>Salir</button>
+      <button class="panel-burger" id="panelBurger" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </header>
 
@@ -66,134 +69,155 @@
         <h1 id="helloName">Hola</h1>
       </div>
 
-      <div class="panel-grid" id="panelGrid">
-        <!-- Mi información -->
-        <article class="panel-card glass">
-          <header class="panel-card__head">
-            <h2>Mi información</h2>
-          </header>
-          <dl class="info-list" id="infoList"></dl>
-        </article>
+      <div class="panel-layout">
+        <div class="panel-content" id="panelGrid">
 
-        <!-- Mi equipo -->
-        <article class="panel-card glass">
-          <header class="panel-card__head">
-            <h2>Mi color y equipo</h2>
-            <span class="badge" id="teamBadge">Sin elegir</span>
-          </header>
-          <p class="panel-muted">Elige el color de tu equipo. Los equipos definen las actividades.</p>
-          <div class="team-grid" id="teamGrid"></div>
-          <p class="form-note" id="teamNote" role="status"></p>
-        </article>
+          <!-- Mi información -->
+          <article class="panel-card glass" id="sec-info">
+            <header class="panel-card__head">
+              <h2>Mi información</h2>
+            </header>
+            <dl class="info-list" id="infoList"></dl>
+          </article>
 
-        <!-- Mi habitación -->
-        <article class="panel-card glass">
-          <header class="panel-card__head">
-            <h2>Mi habitación</h2>
-          </header>
-          <div class="room-box" id="roomBox"></div>
-          <p class="panel-muted">La habitación la asigna el equipo organizador.</p>
-        </article>
+          <!-- Mi equipo -->
+          <article class="panel-card glass" id="sec-equipo">
+            <header class="panel-card__head">
+              <h2>Mi color y equipo</h2>
+              <span class="badge" id="teamBadge">Sin elegir</span>
+            </header>
+            <p class="panel-muted">Elige el color de tu equipo. Los equipos definen las actividades.</p>
+            <div class="team-grid" id="teamGrid"></div>
+            <p class="form-note" id="teamNote" role="status"></p>
+          </article>
 
-        <!-- Mi QR -->
-        <article class="panel-card glass">
-          <header class="panel-card__head">
-            <h2>Mi QR</h2>
-          </header>
-          <p class="panel-muted">Muéstralo para el control de comidas. También puedes descargarlo.</p>
-          <div class="qr-box" id="qrBox"></div>
-          <a class="btn btn--primary btn--block" id="qrDownload" download>Descargar mi QR</a>
-        </article>
+          <!-- Mi habitación -->
+          <article class="panel-card glass" id="sec-habitacion">
+            <header class="panel-card__head">
+              <h2>Mi habitación</h2>
+            </header>
+            <div class="room-box" id="roomBox"></div>
+            <p class="panel-muted">La habitación la asigna el equipo organizador.</p>
+          </article>
 
-        <!-- Mis pagos -->
-        <article class="panel-card glass panel-card--wide">
-          <header class="panel-card__head">
-            <h2>Mis pagos</h2>
-            <span class="badge" id="pagosBadge">0 / 2</span>
-          </header>
-          <p class="panel-muted">
-            El aporte se paga en 2 partes. Registra los datos de tu pago y sube el comprobante o captura;
-            el equipo organizador lo verificará.
-          </p>
+          <!-- Mi QR -->
+          <article class="panel-card glass" id="sec-qr">
+            <header class="panel-card__head">
+              <h2>Mi QR</h2>
+            </header>
+            <p class="panel-muted">Muéstralo para el control de comidas. También puedes descargarlo.</p>
+            <div class="qr-box" id="qrBox"></div>
+            <a class="btn btn--primary btn--block" id="qrDownload" download>Descargar mi QR</a>
+          </article>
 
-          <form id="pagoForm" class="pago-form" novalidate>
-            <div class="grid-2">
+          <!-- Mis pagos -->
+          <article class="panel-card glass panel-card--wide" id="sec-pagos">
+            <header class="panel-card__head">
+              <h2>Mis pagos</h2>
+              <span class="badge" id="pagosBadge">0 de 2 verificados</span>
+            </header>
+
+            <div class="pago-estado" id="pagoEstado"></div>
+
+            <p class="panel-muted">
+              El aporte se paga en 2 partes. Registra los datos de tu pago y sube el comprobante o captura;
+              quedará como <strong>por verificar</strong> hasta que el equipo organizador lo confirme.
+            </p>
+
+            <form id="pagoForm" class="pago-form" novalidate>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="pagoParte">Parte del pago</label>
+                  <select id="pagoParte">
+                    <option value="1">Primera parte</option>
+                    <option value="2">Segunda parte</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pagoTipo">Tipo de pago</label>
+                  <select id="pagoTipo">
+                    <option value="pago_movil">Pago móvil</option>
+                    <option value="transferencia">Transferencia</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label for="pagoBanco">Banco de origen</label>
+                  <select id="pagoBanco" required></select>
+                </div>
+                <div class="field">
+                  <label for="pagoMonto">Monto (opcional)</label>
+                  <input id="pagoMonto" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+
               <div class="field">
-                <label for="pagoParte">Parte del pago</label>
-                <select id="pagoParte">
-                  <option value="1">Primera parte</option>
-                  <option value="2">Segunda parte</option>
-                </select>
+                <label for="pagoReferencia">Referencia de la transacción</label>
+                <input id="pagoReferencia" type="text" placeholder="Número de referencia" required />
+              </div>
+
+              <div class="field">
+                <label for="pagoArchivo">Comprobante o captura del pago</label>
+                <input id="pagoArchivo" type="file" accept="image/*,application/pdf" required />
+                <small class="error"></small>
+                <div class="file-preview" id="pagoPreview" hidden></div>
+              </div>
+
+              <button type="submit" class="btn btn--primary">Enviar comprobante</button>
+              <p class="form-note" id="pagoNote" role="status"></p>
+            </form>
+
+            <h3 class="pagos-sub">Pagos enviados</h3>
+            <div class="pagos-list" id="pagosList"></div>
+          </article>
+
+          <!-- Cambiar contraseña -->
+          <article class="panel-card glass panel-card--wide" id="sec-password">
+            <header class="panel-card__head">
+              <h2>Cambiar contraseña</h2>
+            </header>
+            <form id="passForm" class="pass-form" novalidate>
+              <div class="field">
+                <label for="newPass">Nueva contraseña</label>
+                <input id="newPass" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" required />
               </div>
               <div class="field">
-                <label for="pagoTipo">Tipo de pago</label>
-                <select id="pagoTipo">
-                  <option value="pago_movil">Pago móvil</option>
-                  <option value="transferencia">Transferencia</option>
-                </select>
+                <label for="newPass2">Repite la contraseña</label>
+                <input id="newPass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña" required />
               </div>
-            </div>
+              <button type="submit" class="btn btn--primary">Actualizar contraseña</button>
+              <p class="form-note" id="passNote" role="status"></p>
+            </form>
+          </article>
 
-            <div class="grid-2">
-              <div class="field">
-                <label for="pagoBanco">Banco de origen</label>
-                <select id="pagoBanco" required></select>
-              </div>
-              <div class="field">
-                <label for="pagoMonto">Monto (opcional)</label>
-                <input id="pagoMonto" type="number" min="0" step="0.01" placeholder="0.00" />
-              </div>
-            </div>
+          <!-- Acceso organizadores -->
+          <article class="panel-card glass panel-card--wide" id="sec-organizadores" hidden>
+            <header class="panel-card__head">
+              <h2>Panel de organizadores</h2>
+            </header>
+            <p class="panel-muted" id="staffText"></p>
+          </article>
+        </div>
 
-            <div class="field">
-              <label for="pagoReferencia">Referencia de la transacción</label>
-              <input id="pagoReferencia" type="text" placeholder="Número de referencia" required />
-            </div>
-
-            <div class="field">
-              <label for="pagoArchivo">Comprobante o captura del pago</label>
-              <input id="pagoArchivo" type="file" accept="image/*,application/pdf" required />
-              <small class="error"></small>
-              <div class="file-preview" id="pagoPreview" hidden></div>
-            </div>
-
-            <button type="submit" class="btn btn--primary">Enviar comprobante</button>
-            <p class="form-note" id="pagoNote" role="status"></p>
-          </form>
-
-          <h3 class="pagos-sub">Pagos enviados</h3>
-          <div class="pagos-list" id="pagosList"></div>
-        </article>
-
-        <!-- Cambiar contraseña -->
-        <article class="panel-card glass panel-card--wide">
-          <header class="panel-card__head">
-            <h2>Cambiar contraseña</h2>
-          </header>
-          <form id="passForm" class="pass-form" novalidate>
-            <div class="field">
-              <label for="newPass">Nueva contraseña</label>
-              <input id="newPass" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" required />
-            </div>
-            <div class="field">
-              <label for="newPass2">Repite la contraseña</label>
-              <input id="newPass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña" required />
-            </div>
-            <button type="submit" class="btn btn--primary">Actualizar contraseña</button>
-            <p class="form-note" id="passNote" role="status"></p>
-          </form>
-        </article>
-
-        <!-- Acceso organizadores -->
-        <article class="panel-card glass panel-card--wide" id="staffCard" hidden>
-          <header class="panel-card__head">
-            <h2>Panel de organizadores</h2>
-          </header>
-          <p class="panel-muted" id="staffText"></p>
-        </article>
+        <!-- Menú lateral -->
+        <aside class="panel-side glass" id="panelSide" aria-label="Secciones del panel">
+          <nav class="panel-side__nav">
+            <a href="#sec-info" data-target="sec-info"><span class="dot"></span>Mi información</a>
+            <a href="#sec-equipo" data-target="sec-equipo"><span class="dot"></span>Mi color y equipo</a>
+            <a href="#sec-habitacion" data-target="sec-habitacion"><span class="dot"></span>Mi habitación</a>
+            <a href="#sec-qr" data-target="sec-qr"><span class="dot"></span>Mi QR</a>
+            <a href="#sec-pagos" data-target="sec-pagos"><span class="dot"></span>Mis pagos</a>
+            <a href="#sec-password" data-target="sec-password"><span class="dot"></span>Contraseña</a>
+            <a href="#sec-organizadores" data-target="sec-organizadores" id="sideStaff" hidden><span class="dot"></span>Organizadores</a>
+          </nav>
+        </aside>
       </div>
     </section>
   </main>
+
+  <div class="panel-overlay" id="panelOverlay" hidden></div>
 
   <script src="config.js"></script>
   <script src="vendor/supabase-js.js"></script>
