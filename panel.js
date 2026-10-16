@@ -108,7 +108,7 @@
 
     const { data, error } = await sb
       .from("profiles")
-      .select("id, nombre, email, telefono, edad, iglesia, talla, emergencia, notas, rol, qr_token, equipo_id, habitacion_id")
+      .select("id, nombre, email, telefono, edad, iglesia, talla, emergencia, notas, rol, qr_token, equipo_id, equipo_pendiente_id, habitacion_id")
       .eq("id", session.user.id)
       .maybeSingle();
 
@@ -256,9 +256,14 @@
   }
 
   async function refreshProfile() {
-    const { data } = await sb.from("profiles").select("equipo_id, habitacion_id").eq("id", currentUser.id).maybeSingle();
+    const { data } = await sb
+      .from("profiles")
+      .select("equipo_id, equipo_pendiente_id, habitacion_id")
+      .eq("id", currentUser.id)
+      .maybeSingle();
     if (data && profile) {
       profile.equipo_id = data.equipo_id;
+      profile.equipo_pendiente_id = data.equipo_pendiente_id;
       profile.habitacion_id = data.habitacion_id;
     }
   }
@@ -266,45 +271,71 @@
   function paintTeams() {
     if (!profile) return;
 
-    const mine = teams.find((t) => t.id === profile.equipo_id);
-    els.teamBadge.textContent = mine ? mine.nombre : "Sin elegir";
+    const aprobado = teams.find((t) => t.id === profile.equipo_id);
+    const pendiente = teams.find((t) => t.id === profile.equipo_pendiente_id);
+
+    if (pendiente) {
+      els.teamBadge.textContent = "Por aprobar";
+      els.teamNote.innerHTML =
+        `Solicitaste <strong>${escapeHtml(pendiente.nombre)}</strong>. Un organizador debe aprobarlo. ` +
+        `<button type="button" class="link-btn" id="cancelarSolicitud">Cancelar solicitud</button>`;
+      els.teamNote.className = "form-note";
+      const cancel = document.getElementById("cancelarSolicitud");
+      if (cancel) cancel.addEventListener("click", cancelarSolicitud);
+    } else {
+      els.teamBadge.textContent = aprobado ? aprobado.nombre : "Sin elegir";
+      els.teamNote.textContent = aprobado
+        ? "Equipo confirmado por el organizador."
+        : "";
+      els.teamNote.className = "form-note";
+    }
 
     els.teamGrid.innerHTML = teams
       .map((t) => {
-        const isMine = t.id === profile.equipo_id;
-        const full = t.cupo > 0 && t.ocupados >= t.cupo && !isMine;
-        const cupo = t.cupo > 0 ? `${t.ocupados}/${t.cupo}` : `${t.ocupados} inscritos`;
+        const esAprobado = t.id === profile.equipo_id;
+        const esPendiente = t.id === profile.equipo_pendiente_id;
+        const llenos = t.cupo > 0 ? t.ocupados + t.pendientes : 0;
+        const full = t.cupo > 0 && llenos >= t.cupo && !esAprobado && !esPendiente;
+        const cupo = t.cupo > 0 ? `${t.ocupados}/${t.cupo}` : `${t.ocupados} confirmados`;
+        const detalle = esAprobado ? "Tu equipo" : esPendiente ? "Solicitado" : full ? "Completo" : cupo;
         return `
-          <button type="button" class="team-option ${isMine ? "is-mine" : ""}"
+          <button type="button" class="team-option ${esAprobado ? "is-mine" : ""} ${esPendiente ? "is-pending" : ""}"
                   data-team="${t.id}" ${full ? "disabled" : ""}>
             <span class="team-dot" style="background:${escapeHtml(t.color)}"></span>
             <strong>${escapeHtml(t.nombre)}</strong>
-            <small>${isMine ? "Tu equipo" : full ? "Completo" : cupo}</small>
+            <small>${detalle}</small>
           </button>`;
       })
       .join("");
 
     els.teamGrid.querySelectorAll(".team-option").forEach((btn) => {
-      btn.addEventListener("click", () => joinTeam(btn.dataset.team));
+      btn.addEventListener("click", () => solicitarEquipo(btn.dataset.team));
     });
   }
 
-  async function joinTeam(teamId) {
-    setMessage(els.teamNote, "Guardando tu elección…", null);
+  async function solicitarEquipo(teamId) {
+    setMessage(els.teamNote, "Enviando tu solicitud…", null);
     els.teamGrid.querySelectorAll(".team-option").forEach((b) => (b.disabled = true));
 
-    const { error } = await sb.rpc("unirse_equipo", { p_equipo: teamId });
+    const { error } = await sb.rpc("solicitar_equipo", { p_equipo: teamId });
 
     if (error) {
-      console.error("[panel] unirse_equipo", error);
-      setMessage(els.teamNote, error.message || "No se pudo asignar el equipo.", "error");
+      console.error("[panel] solicitar_equipo", error);
+      setMessage(els.teamNote, error.message || "No se pudo enviar la solicitud.", "error");
     } else {
-      setMessage(els.teamNote, "¡Equipo asignado!", "ok");
       await refreshProfile();
     }
-
     await loadTeams();
-    setTimeout(() => setMessage(els.teamNote, ""), 2600);
+  }
+
+  async function cancelarSolicitud() {
+    const { error } = await sb.rpc("cancelar_solicitud_equipo");
+    if (error) {
+      setMessage(els.teamNote, error.message, "error");
+      return;
+    }
+    await refreshProfile();
+    await loadTeams();
   }
 
   /* ---------------- Habitación ---------------- */

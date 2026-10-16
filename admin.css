@@ -175,6 +175,21 @@ img.mini-avatar { display: block; }
 
 .empty-note { color: var(--cream-2); font-size: 0.9rem; }
 
+.solicitud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(255, 140, 26, 0.1);
+  border: 1px dashed rgba(255, 181, 71, 0.45);
+  font-size: 0.82rem;
+  color: var(--cream);
+}
+.solicitud strong { color: var(--white); }
+
 /* Inputs dentro de filas */
 .admin-row input[type="text"],
 .admin-row input[type="number"] {

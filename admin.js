@@ -108,12 +108,22 @@
     els.adminRole.textContent = ROL_LABEL[prof.rol] || prof.rol;
     show(els.admin);
 
+    // Equipos y habitaciones: solo el master
+    if (prof.rol !== "master") {
+      els.tabs.querySelector('[data-tab="equipos"]').hidden = true;
+      els.tabs.querySelector('[data-tab="habitaciones"]').hidden = true;
+    }
+
     bindTabs();
     bindForms();
 
     await Promise.all([loadResumen(), loadTeams(), loadRooms()]);
     await Promise.all([loadPagos(), loadPeople()]);
     renderRooms();
+  }
+
+  function esMaster() {
+    return me?.rol === "master";
   }
 
   function bindTabs() {
@@ -123,6 +133,8 @@
   }
 
   function switchTab(tab) {
+    const btn = els.tabs.querySelector(`[data-tab="${tab}"]`);
+    if (btn?.hidden) tab = "resumen";
     els.tabs.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
     TABS.forEach((t) => ($(`tab-${t}`).hidden = t !== tab));
   }
@@ -139,6 +151,7 @@
     const items = [
       ["Participantes", r.participantes, false],
       ["Sin equipo", r.sin_equipo, r.sin_equipo > 0],
+      ["Solicitudes de equipo", r.solicitudes_equipo, r.solicitudes_equipo > 0],
       ["Sin habitación", r.sin_habitacion, r.sin_habitacion > 0],
       ["Equipos", r.equipos, false],
       ["Habitaciones", r.habitaciones, false],
@@ -268,22 +281,37 @@
     }
 
     const roomOptions = (sel) =>
-      '<option value="">Sin asignar</option>' +
+      '<option value="">Sin habitación</option>' +
       rooms
         .map((r) => `<option value="${r.id}" ${r.id === sel ? "selected" : ""}>${esc(r.nombre)}</option>`)
         .join("");
 
-    const esMaster = me?.rol === "master";
+    const teamOptions = (sel) =>
+      '<option value="">Sin equipo</option>' +
+      teams
+        .map((t) => `<option value="${t.id}" ${t.id === sel ? "selected" : ""}>${esc(t.nombre)}</option>`)
+        .join("");
+
     const rolOptions = (sel) =>
       ["participante", "admin", "master"]
         .map((r) => `<option value="${r}" ${r === sel ? "selected" : ""}>${ROL_LABEL[r]}</option>`)
         .join("");
+
+    const dis = esMaster() ? "" : "disabled";
 
     els.adminPeople.innerHTML = lista
       .map((p) => {
         const equipo = p.equipo_nombre
           ? `<span class="chip" style="background:${esc(p.equipo_color)};width:14px;height:14px;border:0"></span> ${esc(p.equipo_nombre)}`
           : "Sin equipo";
+        const solicitud = p.equipo_pendiente_id
+          ? `<div class="solicitud">
+               <span class="chip" style="background:${esc(p.equipo_pendiente_color)};width:12px;height:12px;border:0"></span>
+               Solicita <strong>${esc(p.equipo_pendiente_nombre)}</strong>
+               <button class="btn btn--ok btn--xs" data-ok="${p.id}">Aprobar</button>
+               <button class="btn btn--no btn--xs" data-no="${p.id}">Rechazar</button>
+             </div>`
+          : "";
         return `
           <div class="person">
             <div class="person__main">
@@ -292,19 +320,67 @@
                 <strong>${esc(p.nombre || "Sin nombre")}</strong>
                 <small>${esc(p.email || "")}</small>
                 <small>${esc(p.iglesia || "Sin iglesia")} · ${p.edad ?? "—"} años · Talla ${esc(p.talla || "—")} · ${equipo}</small>
+                ${solicitud}
               </div>
             </div>
             <div class="person__controls">
+              <label class="mini-label">Equipo
+                <select data-team="${p.id}" ${dis}>${teamOptions(p.equipo_id)}</select>
+              </label>
               <label class="mini-label">Habitación
-                <select data-room="${p.id}">${roomOptions(p.habitacion_id)}</select>
+                <select data-room="${p.id}" ${dis}>${roomOptions(p.habitacion_id)}</select>
               </label>
               <label class="mini-label">Rol
-                <select data-rol="${p.id}" ${esMaster ? "" : "disabled"}>${rolOptions(p.rol)}</select>
+                <select data-rol="${p.id}" ${esMaster() ? "" : "disabled"}>${rolOptions(p.rol)}</select>
               </label>
             </div>
           </div>`;
       })
       .join("");
+
+    els.adminPeople.querySelectorAll("select[data-team]").forEach((sel) =>
+      sel.addEventListener("change", async () => {
+        const { error } = await sb
+          .from("profiles")
+          .update({ equipo_id: sel.value || null, equipo_pendiente_id: null })
+          .eq("id", sel.dataset.team);
+        if (error) {
+          alert(`No se pudo asignar: ${error.message}`);
+          return;
+        }
+        await Promise.all([loadPeople(), loadTeams(), loadResumen()]);
+      })
+    );
+
+    els.adminPeople.querySelectorAll("button[data-ok]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const persona = people.find((p) => p.id === btn.dataset.ok);
+        if (!persona) return;
+        const { error } = await sb
+          .from("profiles")
+          .update({ equipo_id: persona.equipo_pendiente_id, equipo_pendiente_id: null })
+          .eq("id", persona.id);
+        if (error) {
+          alert(`No se pudo aprobar: ${error.message}`);
+          return;
+        }
+        await Promise.all([loadPeople(), loadTeams(), loadResumen()]);
+      })
+    );
+
+    els.adminPeople.querySelectorAll("button[data-no]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const { error } = await sb
+          .from("profiles")
+          .update({ equipo_pendiente_id: null })
+          .eq("id", btn.dataset.no);
+        if (error) {
+          alert(`No se pudo rechazar: ${error.message}`);
+          return;
+        }
+        await Promise.all([loadPeople(), loadTeams(), loadResumen()]);
+      })
+    );
 
     els.adminPeople.querySelectorAll("select[data-room]").forEach((sel) =>
       sel.addEventListener("change", async () => {
@@ -336,7 +412,7 @@
 
   /* ---------------- Equipos ---------------- */
   async function loadTeams() {
-    const { data, error } = await sb.from("equipos").select("*").order("orden");
+    const { data, error } = await sb.rpc("equipos_resumen");
     if (error) {
       console.error("[admin] equipos", error);
       return;
@@ -359,6 +435,7 @@
             <input type="color" value="${esc(t.color)}" data-f="color" />
             <input type="number" min="0" value="${t.cupo}" data-f="cupo" title="Cupo (0 = sin límite)" />
             <input type="number" min="0" value="${t.orden}" data-f="orden" title="Orden" />
+            <small>${t.ocupados} confirmados · ${t.pendientes} por aprobar</small>
           </div>
           <div class="admin-row__side">
             <button class="btn btn--primary btn--xs" data-save="${t.id}">Guardar</button>

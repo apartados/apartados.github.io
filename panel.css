@@ -284,6 +284,24 @@ body { min-height: 100svh; }
   background: rgba(255, 209, 102, 0.12);
   box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.3) inset;
 }
+.team-option.is-pending {
+  border-color: var(--amber);
+  border-style: dashed;
+  background: rgba(255, 140, 26, 0.08);
+}
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin-left: 4px;
+  color: var(--gold);
+  font-family: var(--font);
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-btn:hover { color: var(--amber); }
 .team-option strong { font-size: 0.95rem; color: var(--white); }
 .team-option small { font-size: 0.78rem; color: var(--cream-2); }
 .team-dot {
