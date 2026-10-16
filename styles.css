@@ -489,6 +489,18 @@ p { margin: 0; }
 
 .form-note { margin-top: 14px; font-size: 0.88rem; font-weight: 600; color: var(--gold); min-height: 20px; }
 .form-note.ok { color: #9dffb0; }
+.form-note.error { color: #ff9a9a; }
+
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn[disabled] { opacity: 0.65; cursor: progress; transform: none; }
 
 /* ---------- Footer ---------- */
 .footer {
