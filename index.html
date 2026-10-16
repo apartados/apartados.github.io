@@ -39,7 +39,6 @@
     <nav class="nav__links" id="navLinks">
       <a href="#encuentro">El Encuentro</a>
       <a href="#experiencias">Experiencias</a>
-      <a href="#programa">Programa</a>
       <a href="panel.html">Mi panel</a>
       <a href="#registro" class="nav__cta">Registrarme</a>
     </nav>
@@ -138,12 +137,6 @@
 
       <div class="cards-2">
         <article class="feature glass reveal">
-          <span class="feature__tag">Música</span>
-          <h3>Noches de alabanza</h3>
-          <p>Banda en vivo, coros de la iglesia y espacios de adoración espontánea alrededor del fuego.</p>
-        </article>
-
-        <article class="feature glass reveal">
           <span class="feature__tag">Dinámicas</span>
           <h3>Retos y trabajo en equipo</h3>
           <p>Juegos de integración, gimkanas y desafíos que rompen el hielo y unen al grupo.</p>
@@ -152,13 +145,13 @@
         <article class="feature glass reveal">
           <span class="feature__tag">Recreación</span>
           <h3>Naturaleza y deporte</h3>
-          <p>Caminatas, fogatas, deportes y tardes de recreación al aire libre para recargar energía.</p>
+          <p>Recreación al aire libre para recargar energía.</p>
         </article>
 
         <article class="feature glass reveal">
           <span class="feature__tag">Espiritual</span>
           <h3>Encuentro personal</h3>
-          <p>Devocionales al amanecer, oración intercesora y un altar personal donde Dios habla.</p>
+          <p>Devocionales al amanecer, oración intercesora.</p>
         </article>
 
         <article class="feature glass reveal">
@@ -171,54 +164,6 @@
           <span class="feature__tag">Servicio</span>
           <h3>Manos a la obra</h3>
           <p>Actividades de servicio y misión para llevar el propósito divino más allá del retiro.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="programa">
-      <div class="section__head reveal">
-        <p class="eyebrow">Programa</p>
-        <h2>Un fin de semana <span class="grad">completo</span></h2>
-      </div>
-
-      <div class="timeline">
-        <article class="day glass reveal">
-          <header>
-            <h3>Viernes</h3>
-            <span>Llegada y apertura</span>
-          </header>
-          <ul>
-            <li><time>16:00</time> Registro y bienvenida</li>
-            <li><time>18:00</time> Cena y dinámicas de integración</li>
-            <li><time>20:00</time> Culto de apertura y adoración</li>
-            <li><time>22:00</time> Fogata y devocional nocturno</li>
-          </ul>
-        </article>
-
-        <article class="day glass reveal">
-          <header>
-            <h3>Sábado</h3>
-            <span>El corazón del encuentro</span>
-          </header>
-          <ul>
-            <li><time>07:00</time> Devocional al amanecer</li>
-            <li><time>09:30</time> Escuela sabática y culto divino</li>
-            <li><time>14:00</time> Recreación y deportes</li>
-            <li><time>17:00</time> Talleres por edades</li>
-            <li><time>19:30</time> Concierto de alabanza</li>
-          </ul>
-        </article>
-
-        <article class="day glass reveal">
-          <header>
-            <h3>Domingo</h3>
-            <span>Envío y propósito</span>
-          </header>
-          <ul>
-            <li><time>07:00</time> Altar personal y oración</li>
-            <li><time>09:00</time> Mensaje de cierre</li>
-            <li><time>12:30</time> Almuerzo de despedida</li>
-          </ul>
         </article>
       </div>
     </section>
@@ -241,11 +186,11 @@
             </li>
             <li class="glass glass--soft">
               <span class="dot"></span>
-              <div><strong>Lugar</strong><small>Campamento Adventista — a confirmar</small></div>
+              <div><strong>Lugar</strong><small>Interpark Vía a Cubiro</small></div>
             </li>
             <li class="glass glass--soft">
               <span class="dot"></span>
-              <div><strong>Edades</strong><small>Jóvenes de 14 a 30 años</small></div>
+              <div><strong>Edades</strong><small>Jóvenes de 15 a 30 años</small></div>
             </li>
             <li class="glass glass--soft">
               <span class="dot"></span>
@@ -278,7 +223,7 @@
           <div class="grid-2">
             <div class="field">
               <label for="edad">Edad</label>
-              <input id="edad" name="edad" type="number" min="14" max="30" placeholder="18" required />
+              <input id="edad" name="edad" type="number" min="15" max="30" placeholder="18" required />
               <small class="error"></small>
             </div>
             <div class="field">
@@ -297,6 +242,12 @@
           <div class="field">
             <label for="password">Contraseña para tu cuenta</label>
             <input id="password" name="password" type="password" placeholder="Mínimo 8 caracteres" minlength="8" required autocomplete="new-password" />
+            <small class="error"></small>
+          </div>
+
+          <div class="field">
+            <label for="password2">Confirmar contraseña</label>
+            <input id="password2" name="password2" type="password" placeholder="Repite la contraseña" minlength="8" required autocomplete="new-password" />
             <small class="error"></small>
           </div>
 
@@ -358,7 +309,6 @@
 
     <div class="footer__meta">
       <a href="#registro">Registro</a>
-      <a href="#programa">Programa</a>
       <a href="#experiencias">Experiencias</a>
       <span>© <span id="year"></span> Apartados 2.0</span>
     </div>
