@@ -42,6 +42,10 @@
     panelSide: document.getElementById("panelSide"),
     panelOverlay: document.getElementById("panelOverlay"),
     sideStaff: document.getElementById("sideStaff"),
+    avatarImg: document.getElementById("avatarImg"),
+    avatarInitials: document.getElementById("avatarInitials"),
+    avatarInput: document.getElementById("avatarInput"),
+    avatarNote: document.getElementById("avatarNote"),
     staffCard: document.getElementById("sec-organizadores"),
     staffText: document.getElementById("staffText"),
   };
@@ -115,11 +119,87 @@
     profile = data || null;
     show(els.panel);
     paint();
+    paintAvatar();
     loadTeams();
     loadRoom();
     paintQr();
     loadPagos();
   }
+
+  /* ---------------- Foto de perfil ---------------- */
+  function avatarUrl(path) {
+    if (!path) return "";
+    return sb.storage.from("avatares").getPublicUrl(path).data.publicUrl;
+  }
+
+  function initialsOf(name) {
+    const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "?";
+    return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
+  }
+
+  function paintAvatar() {
+    const path = profile?.avatar_path;
+    const nombre = profile?.nombre || currentUser?.email || "";
+    if (path) {
+      els.avatarImg.src = avatarUrl(path);
+      els.avatarImg.hidden = false;
+      els.avatarInitials.textContent = initialsOf(nombre);
+    } else {
+      els.avatarImg.hidden = true;
+      els.avatarImg.removeAttribute("src");
+      els.avatarInitials.textContent = initialsOf(nombre);
+    }
+  }
+
+  els.avatarInput.addEventListener("change", async () => {
+    const file = els.avatarInput.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setMessage(els.avatarNote, "Elige una imagen (JPG, PNG o WebP).", "error");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setMessage(els.avatarNote, "La imagen supera los 3 MB.", "error");
+      return;
+    }
+
+    const label = els.avatarInput.closest(".avatar");
+    label.classList.add("is-loading");
+    setMessage(els.avatarNote, "Subiendo tu foto…", null);
+
+    const previo = profile?.avatar_path || null;
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
+
+    const { error: upError } = await sb.storage
+      .from("avatares")
+      .upload(path, file, { contentType: file.type || undefined, upsert: true });
+
+    if (upError) {
+      label.classList.remove("is-loading");
+      setMessage(els.avatarNote, `No se pudo subir la foto: ${upError.message}`, "error");
+      return;
+    }
+
+    const { error: rpcError } = await sb.rpc("actualizar_avatar", { p_path: path });
+    if (rpcError) {
+      label.classList.remove("is-loading");
+      await sb.storage.from("avatares").remove([path]);
+      setMessage(els.avatarNote, rpcError.message, "error");
+      return;
+    }
+
+    if (previo) await sb.storage.from("avatares").remove([previo]);
+    if (profile) profile.avatar_path = path;
+
+    label.classList.remove("is-loading");
+    els.avatarInput.value = "";
+    paintAvatar();
+    setMessage(els.avatarNote, "¡Foto actualizada!", "ok");
+    setTimeout(() => setMessage(els.avatarNote, ""), 3000);
+  });
 
   function paint() {
     const nombre = profile?.nombre || currentUser?.email || "Participante";

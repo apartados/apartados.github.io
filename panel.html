@@ -65,8 +65,17 @@
     <!-- Panel -->
     <section class="panel-view" id="viewPanel" hidden>
       <div class="panel-hello">
-        <p class="eyebrow" id="helloRole"></p>
-        <h1 id="helloName">Hola</h1>
+        <label class="avatar" title="Cambiar mi foto">
+          <img id="avatarImg" alt="Mi foto de perfil" hidden />
+          <span class="avatar__initials" id="avatarInitials">?</span>
+          <span class="avatar__overlay">Cambiar</span>
+          <input type="file" id="avatarInput" accept="image/*" hidden />
+        </label>
+        <div class="panel-hello__text">
+          <p class="eyebrow" id="helloRole"></p>
+          <h1 id="helloName">Hola</h1>
+          <p class="form-note" id="avatarNote" role="status"></p>
+        </div>
       </div>
 
       <div class="panel-layout">
@@ -198,6 +207,7 @@
               <h2>Panel de organizadores</h2>
             </header>
             <p class="panel-muted" id="staffText"></p>
+            <a class="btn btn--primary" href="admin.html">Ir al panel de organizadores</a>
           </article>
         </div>
 

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organizadores · Apartados 2.0</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="panel.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="icon" href="https://commons.wikimedia.org/wiki/Special:FilePath/Seventh-day%20Adventist%20Church%20logo%20in%20Spanish.png" />
+</head>
+<body>
+  <div class="glow" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+    <span class="orb orb--3"></span>
+    <div class="grain"></div>
+  </div>
+
+  <header class="panel-top glass">
+    <a class="nav__brand" href="panel.html">
+      <span class="nav__name">APARTADOS <em>2.0</em></span>
+    </a>
+    <div class="panel-top__right">
+      <span class="panel-top__email" id="userEmail"></span>
+      <button class="btn btn--ghost btn--sm" id="logoutBtn" hidden>Salir</button>
+      <button class="panel-burger" id="panelBurger" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="panel-loading" id="viewLoading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Cargando panel de organizadores…</p>
+    </section>
+
+    <section id="viewDenied" hidden>
+      <div class="panel-card glass panel-card--narrow">
+        <p class="eyebrow">Acceso restringido</p>
+        <h1>Sin permisos</h1>
+        <p class="panel-muted">Esta sección es solo para organizadores.</p>
+        <a class="btn btn--primary" href="panel.html">Volver a mi panel</a>
+      </div>
+    </section>
+
+    <section id="viewAdmin" hidden>
+      <div class="admin-head">
+        <div>
+          <p class="eyebrow" id="adminRole"></p>
+          <h1>Panel de organizadores</h1>
+        </div>
+      </div>
+
+      <nav class="admin-tabs" id="adminTabs">
+        <button type="button" data-tab="resumen" class="active">Resumen</button>
+        <button type="button" data-tab="pagos">Pagos <span class="tab-badge" id="tabPagos" hidden>0</span></button>
+        <button type="button" data-tab="participantes">Participantes</button>
+        <button type="button" data-tab="equipos">Equipos</button>
+        <button type="button" data-tab="habitaciones">Habitaciones</button>
+      </nav>
+
+      <!-- Resumen -->
+      <div class="admin-panel" id="tab-resumen">
+        <div class="stat-grid" id="statGrid"></div>
+      </div>
+
+      <!-- Pagos -->
+      <div class="admin-panel" id="tab-pagos" hidden>
+        <div class="admin-toolbar">
+          <div class="field field--inline">
+            <label for="filtroPagos">Filtrar</label>
+            <select id="filtroPagos">
+              <option value="">Todos</option>
+              <option value="en_revision" selected>Por verificar</option>
+              <option value="aprobado">Verificados</option>
+              <option value="rechazado">Rechazados</option>
+            </select>
+          </div>
+        </div>
+        <div class="pagos-list" id="adminPagosList"></div>
+      </div>
+
+      <!-- Participantes -->
+      <div class="admin-panel" id="tab-participantes" hidden>
+        <div class="admin-toolbar">
+          <div class="field field--inline">
+            <label for="buscarParticipante">Buscar</label>
+            <input id="buscarParticipante" type="search" placeholder="Nombre o correo" />
+          </div>
+          <span class="admin-count" id="participantesCount"></span>
+        </div>
+        <div class="admin-people" id="adminPeople"></div>
+      </div>
+
+      <!-- Equipos -->
+      <div class="admin-panel" id="tab-equipos" hidden>
+        <form class="admin-add glass" id="equipoForm">
+          <div class="field"><label>Nombre</label><input id="equipoNombre" type="text" placeholder="Equipo Naranja" required /></div>
+          <div class="field"><label>Color</label><input id="equipoColor" type="color" value="#ff6a00" required /></div>
+          <div class="field"><label>Cupo (0 = sin límite)</label><input id="equipoCupo" type="number" min="0" value="0" /></div>
+          <div class="field"><label>Orden</label><input id="equipoOrden" type="number" min="0" value="0" /></div>
+          <button type="submit" class="btn btn--primary">Agregar equipo</button>
+          <p class="form-note" id="equipoNote" role="status"></p>
+        </form>
+        <div class="admin-list" id="adminEquipos"></div>
+      </div>
+
+      <!-- Habitaciones -->
+      <div class="admin-panel" id="tab-habitaciones" hidden>
+        <form class="admin-add glass" id="habitacionForm">
+          <div class="field"><label>Nombre</label><input id="habitacionNombre" type="text" placeholder="Cabaña 1" required /></div>
+          <div class="field"><label>Cupo</label><input id="habitacionCupo" type="number" min="1" value="4" required /></div>
+          <button type="submit" class="btn btn--primary">Agregar habitación</button>
+          <p class="form-note" id="habitacionNote" role="status"></p>
+        </form>
+        <div class="admin-list" id="adminHabitaciones"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
