@@ -433,6 +433,21 @@ p { margin: 0; }
 .register__details strong { display: block; color: var(--white); font-size: 0.95rem; }
 .register__details small { color: var(--cream-2); font-size: 0.86rem; }
 
+.telegram-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  color: var(--cream);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.telegram-cta:hover { transform: translateY(-3px); border-color: rgba(255, 181, 71, 0.45); }
+.telegram-cta svg { color: #43a5e0; flex: none; }
+.telegram-cta strong { display: block; color: var(--white); font-size: 0.95rem; }
+.telegram-cta small { color: var(--cream-2); font-size: 0.84rem; }
+
 .register__card { border-radius: var(--radius); padding: clamp(24px, 3vw, 34px); }
 .register__card-head {
   display: flex;

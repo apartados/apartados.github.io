@@ -352,6 +352,9 @@ body { min-height: 100svh; }
 
 .btn--xs { padding: 9px 16px; font-size: 0.85rem; }
 
+.telegram-btn { display: inline-flex; align-items: center; gap: 10px; }
+.telegram-btn svg { flex: none; }
+
 .info-form { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.09); }
 .info-form .field { margin-bottom: 12px; }
 .info-form__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
