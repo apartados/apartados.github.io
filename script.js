@@ -36,11 +36,13 @@ const observer = new IntersectionObserver(
 
 document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
 
-/* ---------------- Registro ---------------- */
+/* ---------------- Registro (crea cuenta real) ---------------- */
 const CONFIG = window.APARTA2_CONFIG || {};
 const SUPABASE_URL = (CONFIG.SUPABASE_URL || "").replace(/\/+$/, "");
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY || "";
-const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
+
+const sb = isConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const form = document.getElementById("registroForm");
 const note = document.getElementById("formNote");
@@ -53,6 +55,7 @@ const rules = {
   edad: (v) => (Number(v) >= 14 && Number(v) <= 30) || "Debes tener entre 14 y 30 años.",
   telefono: (v) => v.replace(/\D/g, "").length >= 7 || "Ingresa un teléfono válido.",
   email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Ingresa un correo válido.",
+  password: (v) => v.length >= 8 || "La contraseña debe tener al menos 8 caracteres.",
 };
 
 function setNote(message, type) {
@@ -94,43 +97,6 @@ function emptyToNull(value) {
   return v === "" ? null : v;
 }
 
-function buildPayload() {
-  return {
-    nombre: form.nombre.value.trim().replace(/\s+/g, " "),
-    edad: Number(form.edad.value),
-    telefono: form.telefono.value.trim(),
-    email: form.email.value.trim().toLowerCase(),
-    iglesia: emptyToNull(form.iglesia.value),
-    talla: emptyToNull(form.talla.value),
-    emergencia: emptyToNull(form.emergencia.value),
-    notas: emptyToNull(form.notas.value),
-  };
-}
-
-async function sendToSupabase(payload) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/registros`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (res.ok) return;
-
-  let detail = "";
-  try {
-    const body = await res.json();
-    detail = body.message || body.hint || "";
-  } catch (_) {
-    /* respuesta sin cuerpo */
-  }
-  throw new Error(detail || `Error ${res.status}`);
-}
-
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -139,9 +105,7 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  const fields = [...form.querySelectorAll("input[name], select[name]")].filter(
-    (el) => rules[el.name]
-  );
+  const fields = [...form.querySelectorAll("input[name], select[name]")].filter((el) => rules[el.name]);
   const valid = fields.map(validateField).every(Boolean);
 
   aceptoError.style.display = acepto.checked ? "none" : "block";
@@ -154,33 +118,53 @@ form.addEventListener("submit", async (event) => {
   }
 
   if (!isConfigured) {
-    setNote(
-      "El registro todavía no está conectado a la base de datos. Falta configurar Supabase en config.js.",
-      "error"
-    );
+    setNote("El registro todavía no está conectado. Falta configurar Supabase en config.js.", "error");
     return;
   }
 
-  const nombre = form.nombre.value.trim().split(" ")[0];
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Enviando…";
-  setNote("Guardando tu registro…", null);
+  const nombre = form.nombre.value.trim().replace(/\s+/g, " ");
+  const email = form.email.value.trim().toLowerCase();
 
-  try {
-    await sendToSupabase(buildPayload());
-    setNote(
-      `¡Listo, ${nombre}! Tu registro fue enviado. Pronto te contactaremos con los detalles.`,
-      "ok"
-    );
-    form.reset();
-  } catch (error) {
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Creando tu cuenta…";
+  setNote("Creando tu cuenta…", null);
+
+  const { error } = await sb.auth.signUp({
+    email,
+    password: form.password.value,
+    options: {
+      data: {
+        nombre,
+        edad: form.edad.value.trim(),
+        telefono: form.telefono.value.trim(),
+        iglesia: emptyToNull(form.iglesia.value) || "",
+        talla: form.talla.value || "",
+        emergencia: emptyToNull(form.emergencia.value) || "",
+        notas: emptyToNull(form.notas.value) || "",
+      },
+    },
+  });
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Crear mi cuenta y registrarme";
+
+  if (error) {
     console.error("[registro]", error);
+    const yaExiste = /already registered|already exists/i.test(error.message);
     setNote(
-      "No pudimos guardar tu registro. Revisa tu conexión e inténtalo de nuevo.",
+      yaExiste
+        ? "Ese correo ya tiene una cuenta. Entra a tu panel o usa otro correo."
+        : `No pudimos crear tu cuenta: ${error.message}`,
       "error"
     );
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Confirmar registro";
+    if (yaExiste) form.email.focus();
+    return;
   }
+
+  const primerNombre = nombre.split(" ")[0];
+  setNote(`¡Listo, ${primerNombre}! Tu cuenta está creada. Te llevamos a tu panel…`, "ok");
+  form.reset();
+  setTimeout(() => {
+    window.location.href = "panel.html";
+  }, 1400);
 });

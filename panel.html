@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi panel · Apartados 2.0</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="panel.css" />
+  <link rel="icon" href="https://commons.wikimedia.org/wiki/Special:FilePath/Seventh-day%20Adventist%20Church%20logo%20in%20Spanish.png" />
+</head>
+<body>
+  <div class="glow" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+    <span class="orb orb--3"></span>
+    <div class="grain"></div>
+  </div>
+
+  <header class="panel-top glass">
+    <a class="nav__brand" href="index.html">
+      <span class="nav__name">APARTADOS <em>2.0</em></span>
+    </a>
+    <div class="panel-top__right">
+      <span class="panel-top__email" id="userEmail"></span>
+      <button class="btn btn--ghost btn--sm" id="logoutBtn" hidden>Salir</button>
+    </div>
+  </header>
+
+  <main class="panel-main">
+    <!-- Cargando -->
+    <section class="panel-view panel-loading" id="viewLoading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Cargando tu panel…</p>
+    </section>
+
+    <!-- Login -->
+    <section class="panel-view" id="viewLogin" hidden>
+      <form class="panel-card glass panel-card--narrow" id="loginForm" novalidate>
+        <p class="eyebrow">Área de participantes</p>
+        <h1>Entra a tu panel</h1>
+        <p class="panel-muted">Usa el correo y la contraseña con los que te registraste.</p>
+
+        <div class="field">
+          <label for="loginEmail">Correo electrónico</label>
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" required />
+        </div>
+        <div class="field">
+          <label for="loginPass">Contraseña</label>
+          <input id="loginPass" type="password" autocomplete="current-password" placeholder="Tu contraseña" required />
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--block">Entrar</button>
+        <p class="form-note" id="loginNote" role="status"></p>
+        <p class="form-alt">¿No tienes cuenta? <a href="index.html#registro">Regístrate aquí</a></p>
+      </form>
+    </section>
+
+    <!-- Panel -->
+    <section class="panel-view" id="viewPanel" hidden>
+      <div class="panel-hello">
+        <p class="eyebrow" id="helloRole"></p>
+        <h1 id="helloName">Hola</h1>
+      </div>
+
+      <div class="panel-grid" id="panelGrid">
+        <!-- Mi información -->
+        <article class="panel-card glass">
+          <header class="panel-card__head">
+            <h2>Mi información</h2>
+          </header>
+          <dl class="info-list" id="infoList"></dl>
+        </article>
+
+        <!-- Mi equipo -->
+        <article class="panel-card glass">
+          <header class="panel-card__head">
+            <h2>Mi color y equipo</h2>
+            <span class="badge" id="teamBadge">Sin elegir</span>
+          </header>
+          <p class="panel-muted">Elige el color de tu equipo. Los equipos definen las actividades.</p>
+          <div class="team-grid" id="teamGrid"></div>
+          <p class="form-note" id="teamNote" role="status"></p>
+        </article>
+
+        <!-- Mi habitación -->
+        <article class="panel-card glass">
+          <header class="panel-card__head">
+            <h2>Mi habitación</h2>
+          </header>
+          <div class="room-box" id="roomBox"></div>
+          <p class="panel-muted">La habitación la asigna el equipo organizador.</p>
+        </article>
+
+        <!-- Mi QR -->
+        <article class="panel-card glass">
+          <header class="panel-card__head">
+            <h2>Mi QR</h2>
+          </header>
+          <p class="panel-muted">Muéstralo para el control de comidas. También puedes descargarlo.</p>
+          <div class="qr-box" id="qrBox"></div>
+          <a class="btn btn--primary btn--block" id="qrDownload" download>Descargar mi QR</a>
+        </article>
+
+        <!-- Cambiar contraseña -->
+        <article class="panel-card glass panel-card--wide">
+          <header class="panel-card__head">
+            <h2>Cambiar contraseña</h2>
+          </header>
+          <form id="passForm" class="pass-form" novalidate>
+            <div class="field">
+              <label for="newPass">Nueva contraseña</label>
+              <input id="newPass" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" required />
+            </div>
+            <div class="field">
+              <label for="newPass2">Repite la contraseña</label>
+              <input id="newPass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña" required />
+            </div>
+            <button type="submit" class="btn btn--primary">Actualizar contraseña</button>
+            <p class="form-note" id="passNote" role="status"></p>
+          </form>
+        </article>
+
+        <!-- Acceso organizadores -->
+        <article class="panel-card glass panel-card--wide" id="staffCard" hidden>
+          <header class="panel-card__head">
+            <h2>Panel de organizadores</h2>
+          </header>
+          <p class="panel-muted" id="staffText"></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js.js"></script>
+  <script src="vendor/qrcode-generator.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>

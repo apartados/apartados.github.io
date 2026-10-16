@@ -491,6 +491,10 @@ p { margin: 0; }
 .form-note.ok { color: #9dffb0; }
 .form-note.error { color: #ff9a9a; }
 
+.form-alt { margin-top: 12px; font-size: 0.85rem; color: var(--cream-2); text-align: center; }
+.form-alt a { color: var(--gold); font-weight: 600; }
+.form-alt a:hover { text-decoration: underline; }
+
 .hp {
   position: absolute;
   left: -9999px;

@@ -40,6 +40,7 @@
       <a href="#encuentro">El Encuentro</a>
       <a href="#experiencias">Experiencias</a>
       <a href="#programa">Programa</a>
+      <a href="panel.html">Mi panel</a>
       <a href="#registro" class="nav__cta">Registrarme</a>
     </nav>
 
@@ -289,7 +290,13 @@
 
           <div class="field">
             <label for="email">Correo electrónico</label>
-            <input id="email" name="email" type="email" placeholder="tucorreo@ejemplo.com" required />
+            <input id="email" name="email" type="email" placeholder="tucorreo@ejemplo.com" required autocomplete="email" />
+            <small class="error"></small>
+          </div>
+
+          <div class="field">
+            <label for="password">Contraseña para tu cuenta</label>
+            <input id="password" name="password" type="password" placeholder="Mínimo 8 caracteres" minlength="8" required autocomplete="new-password" />
             <small class="error"></small>
           </div>
 
@@ -321,12 +328,13 @@
 
           <label class="check">
             <input type="checkbox" id="acepto" required />
-            <span>Acepto las normas del retiro y autorizo el uso de mi información para la organización del evento.</span>
+            <span>Acepto las normas del retiro, la creación de mi cuenta con este correo y el uso de mi información para la organización del evento.</span>
           </label>
           <small class="error" id="aceptoError"></small>
 
-          <button type="submit" class="btn btn--primary btn--block">Confirmar registro</button>
+          <button type="submit" class="btn btn--primary btn--block">Crear mi cuenta y registrarme</button>
           <p class="form-note" id="formNote" role="status"></p>
+          <p class="form-alt">¿Ya tienes cuenta? <a href="panel.html">Entra a tu panel</a></p>
         </form>
       </div>
     </section>
@@ -359,6 +367,7 @@
   </footer>
 
   <script src="config.js"></script>
+  <script src="vendor/supabase-js.js"></script>
   <script src="fluid-orb.js"></script>
   <script src="script.js"></script>
 </body>
