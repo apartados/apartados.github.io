@@ -145,11 +145,17 @@
     els.camResult.hidden = false;
     els.camResult.className = `cam-result cam-result--${tipo}`;
     els.resultStatus.textContent =
-      tipo === "ok" ? "Registrado" : tipo === "dup" ? "Ya había registrado" : "No reconocido";
+      tipo === "ok"
+        ? "Registrado"
+        : tipo === "dup"
+        ? "Ya había registrado"
+        : tipo === "bloq"
+        ? "Bloqueado"
+        : "No reconocido";
     els.resultName.textContent = nombre || "—";
     els.resultMeal.textContent = comida || "";
     clearTimeout(resultTimer);
-    resultTimer = setTimeout(() => (els.camResult.hidden = true), 3000);
+    resultTimer = setTimeout(() => (els.camResult.hidden = true), tipo === "bloq" ? 4500 : 3000);
   }
 
   async function registrar(token) {
@@ -171,6 +177,11 @@
     if (!data || data.ok !== true) {
       beep("bad");
       mostrarResultado("bad", "QR no reconocido", "");
+      return;
+    }
+    if (data.bloqueado) {
+      beep("dup");
+      mostrarResultado("bloq", data.nombre, `Espera ${data.minutos} min para volver a escanear`);
       return;
     }
     if (data.ya_registrado) {

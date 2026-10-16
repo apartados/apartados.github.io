@@ -58,6 +58,7 @@
 }
 .cam-result--ok .cam-result__status { color: #9dffb0; }
 .cam-result--dup .cam-result__status { color: #ffd166; }
+.cam-result--bloq .cam-result__status { color: #ff9a9a; }
 .cam-result--bad .cam-result__status { color: #ff9a9a; }
 .cam-result__name {
   font-family: var(--font-display);
@@ -70,6 +71,7 @@
 .cam-result__meal { font-size: 0.82rem; color: var(--cream-2); }
 .cam-result--ok { box-shadow: inset 0 0 0 4px rgba(120, 255, 160, 0.55); }
 .cam-result--dup { box-shadow: inset 0 0 0 4px rgba(255, 209, 102, 0.55); }
+.cam-result--bloq { box-shadow: inset 0 0 0 4px rgba(255, 120, 120, 0.6); }
 .cam-result--bad { box-shadow: inset 0 0 0 4px rgba(255, 120, 120, 0.55); }
 
 .lector-actions { display: flex; gap: 12px; flex-wrap: wrap; }

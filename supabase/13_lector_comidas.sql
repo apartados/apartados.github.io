@@ -30,11 +30,13 @@ security definer
 set search_path = public
 as $$
 declare
-  v_uid     uuid := auth.uid();
-  v_perfil  uuid;
-  v_nombre  text;
-  v_comida  text;
-  v_ya      boolean;
+  v_uid      uuid := auth.uid();
+  v_perfil   uuid;
+  v_nombre   text;
+  v_comida   text;
+  v_ya       boolean;
+  v_ultima   timestamptz;
+  v_restante int;
 begin
   if v_uid is null then
     raise exception 'Debes iniciar sesión.';
@@ -55,21 +57,38 @@ begin
     raise exception 'La comida seleccionada no existe.';
   end if;
 
+  -- 1) ¿ya registró ESTA comida?
   select exists(
     select 1 from public.asistencias_comida
     where profile_id = v_perfil and comida_id = p_comida
   ) into v_ya;
 
-  if not v_ya then
-    insert into public.asistencias_comida (profile_id, comida_id, registrado_por)
-    values (v_perfil, p_comida, v_uid);
+  if v_ya then
+    return json_build_object(
+      'ok', true, 'ya_registrado', true,
+      'nombre', v_nombre, 'comida', v_comida
+    );
   end if;
 
+  -- 2) Bloqueo de 30 minutos tras el último escaneo (evita repeticiones indebidas)
+  select max(created_at) into v_ultima
+  from public.asistencias_comida
+  where profile_id = v_perfil;
+
+  if v_ultima is not null and now() - v_ultima < interval '30 minutes' then
+    v_restante := ceil(extract(epoch from (interval '30 minutes' - (now() - v_ultima))) / 60)::int;
+    return json_build_object(
+      'ok', true, 'bloqueado', true,
+      'nombre', v_nombre, 'comida', v_comida, 'minutos', v_restante
+    );
+  end if;
+
+  insert into public.asistencias_comida (profile_id, comida_id, registrado_por)
+  values (v_perfil, p_comida, v_uid);
+
   return json_build_object(
-    'ok', true,
-    'ya_registrado', v_ya,
-    'nombre', v_nombre,
-    'comida', v_comida
+    'ok', true, 'ya_registrado', false,
+    'nombre', v_nombre, 'comida', v_comida
   );
 end;
 $$;
