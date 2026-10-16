@@ -85,8 +85,53 @@
           <article class="panel-card glass" id="sec-info">
             <header class="panel-card__head">
               <h2>Mi información</h2>
+              <button type="button" class="btn btn--ghost btn--xs" id="btnEditarInfo" hidden>Editar</button>
             </header>
             <dl class="info-list" id="infoList"></dl>
+
+            <form class="info-form" id="infoForm" novalidate hidden>
+              <div class="field">
+                <label for="infoNombre">Nombre completo</label>
+                <input id="infoNombre" type="text" required />
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="infoEdad">Edad</label>
+                  <input id="infoEdad" type="number" min="15" max="30" />
+                </div>
+                <div class="field">
+                  <label for="infoTelefono">Teléfono</label>
+                  <input id="infoTelefono" type="tel" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="infoIglesia">Iglesia / Distrito</label>
+                <input id="infoIglesia" type="text" />
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="infoTalla">Talla de camiseta</label>
+                  <select id="infoTalla">
+                    <option value="">—</option>
+                    <option>S</option><option>M</option><option>L</option>
+                    <option>XL</option><option>XXL</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="infoEmergencia">Contacto de emergencia</label>
+                  <input id="infoEmergencia" type="text" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="infoNotas">Alergias / notas</label>
+                <textarea id="infoNotas" rows="2"></textarea>
+              </div>
+              <div class="info-form__actions">
+                <button type="submit" class="btn btn--primary btn--xs">Guardar cambios</button>
+                <button type="button" class="btn btn--ghost btn--xs" id="btnCancelarInfo">Cancelar</button>
+              </div>
+              <p class="form-note" id="infoNote" role="status"></p>
+            </form>
           </article>
 
           <!-- Mi equipo -->

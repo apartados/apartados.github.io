@@ -51,6 +51,17 @@
     avatarInitials: document.getElementById("avatarInitials"),
     avatarInput: document.getElementById("avatarInput"),
     avatarNote: document.getElementById("avatarNote"),
+    btnEditarInfo: document.getElementById("btnEditarInfo"),
+    infoForm: document.getElementById("infoForm"),
+    infoNombre: document.getElementById("infoNombre"),
+    infoEdad: document.getElementById("infoEdad"),
+    infoTelefono: document.getElementById("infoTelefono"),
+    infoIglesia: document.getElementById("infoIglesia"),
+    infoTalla: document.getElementById("infoTalla"),
+    infoEmergencia: document.getElementById("infoEmergencia"),
+    infoNotas: document.getElementById("infoNotas"),
+    infoNote: document.getElementById("infoNote"),
+    btnCancelarInfo: document.getElementById("btnCancelarInfo"),
     staffCard: document.getElementById("sec-organizadores"),
     staffText: document.getElementById("staffText"),
   };
@@ -79,6 +90,11 @@
 
   function emptyDash(value) {
     return value === null || value === undefined || value === "" ? "—" : String(value);
+  }
+
+  function emptyToNull(value) {
+    const v = (value || "").trim();
+    return v === "" ? null : v;
   }
 
   /* ---------------- Sesión ---------------- */
@@ -242,6 +258,13 @@
     // Solo el master puede cambiar su correo desde el panel
     els.bloqueCorreo.hidden = profile.rol !== "master";
     els.correoActual.textContent = profile.email || currentUser?.email || "—";
+
+    // Solo el master puede editar su propia información
+    els.btnEditarInfo.hidden = profile.rol !== "master";
+    if (profile.rol !== "master") {
+      els.infoForm.hidden = true;
+      els.btnEditarInfo.textContent = "Editar";
+    }
   }
 
   function escapeHtml(str) {
@@ -645,6 +668,76 @@
     );
     sections.forEach((s) => spy.observe(s));
   }
+
+  /* ---------------- Editar mi información (master) ---------------- */
+  function abrirEdicionInfo() {
+    els.infoNombre.value = profile?.nombre || "";
+    els.infoEdad.value = profile?.edad ?? "";
+    els.infoTelefono.value = profile?.telefono || "";
+    els.infoIglesia.value = profile?.iglesia || "";
+    els.infoTalla.value = profile?.talla || "";
+    els.infoEmergencia.value = profile?.emergencia || "";
+    els.infoNotas.value = profile?.notas || "";
+    els.infoForm.hidden = false;
+    els.btnEditarInfo.textContent = "Cerrar";
+    setMessage(els.infoNote, "", null);
+  }
+
+  function cerrarEdicionInfo() {
+    els.infoForm.hidden = true;
+    els.btnEditarInfo.textContent = "Editar";
+    setMessage(els.infoNote, "", null);
+  }
+
+  els.btnEditarInfo.addEventListener("click", () => {
+    els.infoForm.hidden ? abrirEdicionInfo() : cerrarEdicionInfo();
+  });
+  els.btnCancelarInfo.addEventListener("click", cerrarEdicionInfo);
+
+  els.infoForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const nombre = els.infoNombre.value.trim().replace(/\s+/g, " ");
+    const edadTxt = els.infoEdad.value.trim();
+
+    if (nombre.length < 3) return setMessage(els.infoNote, "Escribe tu nombre completo.", "error");
+    if (edadTxt !== "" && (Number(edadTxt) < 15 || Number(edadTxt) > 30)) {
+      return setMessage(els.infoNote, "La edad debe estar entre 15 y 30.", "error");
+    }
+
+    const btn = els.infoForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = "Guardando…";
+
+    const patch = {
+      nombre,
+      edad: edadTxt === "" ? null : Number(edadTxt),
+      telefono: emptyToNull(els.infoTelefono.value),
+      iglesia: emptyToNull(els.infoIglesia.value),
+      talla: emptyToNull(els.infoTalla.value),
+      emergencia: emptyToNull(els.infoEmergencia.value),
+      notas: emptyToNull(els.infoNotas.value),
+    };
+
+    const { error } = await sb.from("profiles").update(patch).eq("id", currentUser.id);
+
+    btn.disabled = false;
+    btn.textContent = "Guardar cambios";
+
+    if (error) {
+      console.error("[panel] info", error);
+      setMessage(els.infoNote, `No se pudo guardar: ${error.message}`, "error");
+      return;
+    }
+
+    Object.assign(profile, patch);
+    paint();
+    paintAvatar();
+    els.infoForm.hidden = true;
+    els.btnEditarInfo.textContent = "Editar";
+    els.helloName.textContent = `Hola, ${nombre.split(" ")[0]}`;
+    setMessage(els.infoNote, "", null);
+  });
 
   /* ---------------- Login ---------------- */
   els.loginForm.addEventListener("submit", async (event) => {

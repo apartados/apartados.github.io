@@ -350,6 +350,12 @@ body { min-height: 100svh; }
 .account-sub:first-child { margin-top: 0; }
 .account-block { padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
 
+.btn--xs { padding: 9px 16px; font-size: 0.85rem; }
+
+.info-form { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.09); }
+.info-form .field { margin-bottom: 12px; }
+.info-form__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
 /* ---------- Pagos ---------- */
 .pago-form {
   display: grid;
