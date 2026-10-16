@@ -182,11 +182,26 @@
             <div class="pagos-list" id="pagosList"></div>
           </article>
 
-          <!-- Cambiar contraseña -->
+          <!-- Mi cuenta -->
           <article class="panel-card glass panel-card--wide" id="sec-password">
             <header class="panel-card__head">
-              <h2>Cambiar contraseña</h2>
+              <h2>Mi cuenta</h2>
             </header>
+
+            <div class="account-block" id="bloqueCorreo" hidden>
+              <h3 class="account-sub">Correo electrónico</h3>
+              <p class="panel-muted">Correo actual: <strong id="correoActual">—</strong></p>
+              <form id="correoForm" class="pass-form" novalidate>
+                <div class="field">
+                  <label for="nuevoCorreo">Nuevo correo</label>
+                  <input id="nuevoCorreo" type="email" placeholder="tucorreo@ejemplo.com" required autocomplete="email" />
+                </div>
+                <button type="submit" class="btn btn--primary">Actualizar correo</button>
+                <p class="form-note" id="correoNote" role="status"></p>
+              </form>
+            </div>
+
+            <h3 class="account-sub">Contraseña</h3>
             <form id="passForm" class="pass-form" novalidate>
               <div class="field">
                 <label for="newPass">Nueva contraseña</label>
@@ -219,7 +234,7 @@
             <a href="#sec-habitacion" data-target="sec-habitacion"><span class="dot"></span>Mi habitación</a>
             <a href="#sec-qr" data-target="sec-qr"><span class="dot"></span>Mi QR</a>
             <a href="#sec-pagos" data-target="sec-pagos"><span class="dot"></span>Mis pagos</a>
-            <a href="#sec-password" data-target="sec-password"><span class="dot"></span>Contraseña</a>
+            <a href="#sec-password" data-target="sec-password"><span class="dot"></span>Mi cuenta</a>
             <a href="#sec-organizadores" data-target="sec-organizadores" id="sideStaff" hidden><span class="dot"></span>Organizadores</a>
           </nav>
         </aside>

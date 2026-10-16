@@ -339,6 +339,17 @@ body { min-height: 100svh; }
 .pass-form .field { margin-bottom: 0; }
 .pass-form .btn { justify-self: start; }
 
+.account-sub {
+  margin: 22px 0 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.account-sub:first-child { margin-top: 0; }
+.account-block { padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+
 /* ---------- Pagos ---------- */
 .pago-form {
   display: grid;

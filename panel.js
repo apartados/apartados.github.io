@@ -26,6 +26,11 @@
     qrDownload: document.getElementById("qrDownload"),
     passForm: document.getElementById("passForm"),
     passNote: document.getElementById("passNote"),
+    bloqueCorreo: document.getElementById("bloqueCorreo"),
+    correoActual: document.getElementById("correoActual"),
+    correoForm: document.getElementById("correoForm"),
+    nuevoCorreo: document.getElementById("nuevoCorreo"),
+    correoNote: document.getElementById("correoNote"),
     pagoForm: document.getElementById("pagoForm"),
     pagoParte: document.getElementById("pagoParte"),
     pagoTipo: document.getElementById("pagoTipo"),
@@ -231,8 +236,12 @@
     els.sideStaff.hidden = !staff;
     if (staff) {
       els.staffText.textContent =
-        "Eres organizador. El panel de organizadores (pagos, equipos, habitaciones y control de comidas) se habilita en la siguiente fase.";
+        "Eres organizador. Entra al panel de organizadores para gestionar pagos, equipos, habitaciones y el staff.";
     }
+
+    // Solo el master puede cambiar su correo desde el panel
+    els.bloqueCorreo.hidden = profile.rol !== "master";
+    els.correoActual.textContent = profile.email || currentUser?.email || "—";
   }
 
   function escapeHtml(str) {
@@ -662,6 +671,41 @@
 
   els.logoutBtn.addEventListener("click", async () => {
     await sb.auth.signOut();
+  });
+
+  /* ---------------- Cambiar correo ---------------- */
+  els.correoForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const nuevo = els.nuevoCorreo.value.trim().toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevo)) {
+      setMessage(els.correoNote, "Escribe un correo válido.", "error");
+      return;
+    }
+    if (nuevo === (profile?.email || "").toLowerCase()) {
+      setMessage(els.correoNote, "Ese ya es tu correo actual.", "error");
+      return;
+    }
+
+    const btn = els.correoForm.querySelector("button");
+    btn.disabled = true;
+    btn.textContent = "Actualizando…";
+
+    const { error } = await sb.rpc("cambiar_mi_correo", { p_email: nuevo });
+
+    btn.disabled = false;
+    btn.textContent = "Actualizar correo";
+
+    if (error) {
+      setMessage(els.correoNote, error.message || "No se pudo cambiar el correo.", "error");
+      return;
+    }
+
+    if (profile) profile.email = nuevo;
+    els.correoActual.textContent = nuevo;
+    els.userEmail.textContent = nuevo;
+    els.correoForm.reset();
+    setMessage(els.correoNote, "¡Correo actualizado! Úsalo para iniciar sesión la próxima vez.", "ok");
   });
 
   /* ---------------- Cambiar contraseña ---------------- */
