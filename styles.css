@@ -544,6 +544,8 @@ p { margin: 0; }
   color: rgba(217, 196, 155, 0.6);
 }
 .footer__credit strong { color: var(--amber); letter-spacing: 0.16em; }
+.footer__credit a { text-decoration: none; }
+.footer__credit a:hover strong { color: var(--gold); text-decoration: underline; }
 
 /* ---------- Fluid Orb (WebGL) ---------- */
 .fluid-orb {
