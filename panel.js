@@ -75,7 +75,7 @@
   let currentUser = null;
   let profile = null;
 
-  const ROL_LABEL = { participante: "Participante", admin: "Organizador", master: "Organizador principal" };
+  const ROL_LABEL = { participante: "Participante", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
 
   function show(view) {
     [els.loading, els.login, els.panel].forEach((el) => (el.hidden = true));
@@ -141,7 +141,7 @@
     show(els.panel);
     paint();
     paintAvatar();
-    loadTeams();
+    if (profile?.rol === "participante") loadTeams();
     loadRoom();
     paintQr();
     loadPagos();
@@ -247,13 +247,18 @@
       .map(([k, v]) => `<div><dt>${k}</dt><dd>${escapeHtml(emptyDash(v))}</dd></div>`)
       .join("");
 
-    const staff = profile.rol === "admin" || profile.rol === "master";
+    const staff = profile.rol === "admin" || profile.rol === "master" || profile.rol === "staff";
     els.staffCard.hidden = !staff;
     els.sideStaff.hidden = !staff;
     if (staff) {
       els.staffText.textContent =
-        "Eres organizador. Entra al panel de organizadores para gestionar pagos, equipos, habitaciones y el staff.";
+        "Eres parte del equipo organizador. Entra al panel para gestionar el evento.";
     }
+
+    // Solo los participantes tienen color/equipo
+    const esParticipante = profile.rol === "participante";
+    document.getElementById("sec-equipo").hidden = !esParticipante;
+    document.getElementById("sideEquipo").hidden = !esParticipante;
 
     // Solo el master puede cambiar su correo desde el panel
     els.bloqueCorreo.hidden = profile.rol !== "master";

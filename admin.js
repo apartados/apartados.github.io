@@ -16,6 +16,8 @@
     tabs: $("adminTabs"),
     tabPagos: $("tabPagos"),
     statGrid: $("statGrid"),
+    financeBlock: $("financeBlock"),
+    financeGrid: $("financeGrid"),
     filtroPagos: $("filtroPagos"),
     adminPagosList: $("adminPagosList"),
     buscarParticipante: $("buscarParticipante"),
@@ -48,7 +50,7 @@
   const TABS = ["resumen", "pagos", "participantes", "staff", "equipos", "habitaciones"];
   const ESTADO_LABEL = { en_revision: "Por verificar", aprobado: "Verificado", rechazado: "Rechazado" };
   const TIPO_LABEL = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
-  const ROL_LABEL = { participante: "Participante", admin: "Organizador", master: "Organizador principal" };
+  const ROL_LABEL = { participante: "Participante", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
 
   let me = null;
   let myId = null;
@@ -100,7 +102,7 @@
       .eq("id", myId)
       .maybeSingle();
 
-    if (error || !prof || (prof.rol !== "admin" && prof.rol !== "master")) {
+    if (error || !prof || !["staff", "admin", "master"].includes(prof.rol)) {
       show(els.denied);
       return;
     }
@@ -117,18 +119,28 @@
       els.tabs.querySelector('[data-tab="habitaciones"]').hidden = true;
       els.tabs.querySelector('[data-tab="staff"]').hidden = true;
     }
+    // Cobranzas: solo admin y master (el staff no las ve)
+    if (!esAdminOMaster()) {
+      els.tabs.querySelector('[data-tab="pagos"]').hidden = true;
+    }
 
     bindTabs();
     bindForms();
 
     await Promise.all([loadResumen(), loadTeams(), loadRooms()]);
-    await Promise.all([loadPagos(), loadPeople()]);
+    const tareas = [loadPeople()];
+    if (esAdminOMaster()) tareas.push(loadPagos());
+    await Promise.all(tareas);
     renderRooms();
     bindStaff();
   }
 
   function esMaster() {
     return me?.rol === "master";
+  }
+
+  function esAdminOMaster() {
+    return me?.rol === "admin" || me?.rol === "master";
   }
 
   function bindTabs() {
@@ -153,6 +165,7 @@
       return;
     }
     const r = data || {};
+    const financiero = esAdminOMaster();
     const items = [
       ["Participantes", r.participantes, false],
       ["Sin equipo", r.sin_equipo, r.sin_equipo > 0],
@@ -160,17 +173,43 @@
       ["Sin habitación", r.sin_habitacion, r.sin_habitacion > 0],
       ["Equipos", r.equipos, false],
       ["Habitaciones", r.habitaciones, false],
-      ["Pagos por verificar", r.pagos_por_verificar, r.pagos_por_verificar > 0],
-      ["Pagos verificados", r.pagos_verificados, false],
+      ["Staff", (r.staff || 0) + (r.admins || 0) + (r.masters || 0), false],
     ];
+    if (financiero) {
+      items.push(["Pagos por verificar", r.pagos_por_verificar, r.pagos_por_verificar > 0]);
+      items.push(["Pagos verificados", r.pagos_verificados, false]);
+    }
+
     els.statGrid.innerHTML = items
       .map(([label, value, alert]) =>
         `<div class="stat ${alert ? "stat--alert" : ""}"><strong>${value ?? 0}</strong><span>${label}</span></div>`
       )
       .join("");
 
+    // Bloque de finanzas: solo lectura, únicamente admin/master
+    if (financiero) {
+      const bs = (n) => `${Number(n || 0).toLocaleString("es-VE")} Bs`;
+      els.financeBlock.hidden = false;
+      els.financeGrid.innerHTML = [
+        ["Recaudado (verificado)", bs(r.recaudado), "ok"],
+        ["Monto por verificar", bs(r.por_verificar_monto), "warn"],
+        ["Pagos verificados", r.pagos_verificados ?? 0, ""],
+        ["Pagos por verificar", r.pagos_por_verificar ?? 0, "warn"],
+      ]
+        .map(
+          ([label, value, kind]) => `
+          <div class="finance-item finance-item--${kind}">
+            <span>${label}</span>
+            <strong>${value}</strong>
+          </div>`
+        )
+        .join("");
+    } else {
+      els.financeBlock.hidden = true;
+    }
+
     const pend = r.pagos_por_verificar || 0;
-    els.tabPagos.hidden = pend === 0;
+    els.tabPagos.hidden = !financiero || pend === 0;
     els.tabPagos.textContent = pend;
   }
 
@@ -274,7 +313,7 @@
   }
 
   function rolOptions(sel) {
-    return ["participante", "admin", "master"]
+    return ["participante", "staff", "admin", "master"]
       .map((r) => `<option value="${r}" ${r === sel ? "selected" : ""}>${ROL_LABEL[r]}</option>`)
       .join("");
   }
@@ -368,8 +407,12 @@
           ? `<div class="solicitud">
                <span class="chip" style="background:${esc(p.equipo_pendiente_color)};width:12px;height:12px;border:0"></span>
                Solicita <strong>${esc(p.equipo_pendiente_nombre)}</strong>
-               <button class="btn btn--ok btn--xs" data-ok="${p.id}">Aprobar</button>
-               <button class="btn btn--no btn--xs" data-no="${p.id}">Rechazar</button>
+               ${
+                 esMaster()
+                   ? `<button class="btn btn--ok btn--xs" data-ok="${p.id}">Aprobar</button>
+                      <button class="btn btn--no btn--xs" data-no="${p.id}">Rechazar</button>`
+                   : ""
+               }
              </div>`
           : "";
         return `
