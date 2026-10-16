@@ -21,6 +21,9 @@
     buscarParticipante: $("buscarParticipante"),
     participantesCount: $("participantesCount"),
     adminPeople: $("adminPeople"),
+    buscarStaff: $("buscarStaff"),
+    staffCount: $("staffCount"),
+    adminStaff: $("adminStaff"),
     equipoForm: $("equipoForm"),
     equipoNombre: $("equipoNombre"),
     equipoColor: $("equipoColor"),
@@ -42,7 +45,7 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const TABS = ["resumen", "pagos", "participantes", "equipos", "habitaciones"];
+  const TABS = ["resumen", "pagos", "participantes", "staff", "equipos", "habitaciones"];
   const ESTADO_LABEL = { en_revision: "Por verificar", aprobado: "Verificado", rechazado: "Rechazado" };
   const TIPO_LABEL = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
   const ROL_LABEL = { participante: "Participante", admin: "Organizador", master: "Organizador principal" };
@@ -108,10 +111,11 @@
     els.adminRole.textContent = ROL_LABEL[prof.rol] || prof.rol;
     show(els.admin);
 
-    // Equipos y habitaciones: solo el master
+    // Equipos, habitaciones y staff: solo el master
     if (prof.rol !== "master") {
       els.tabs.querySelector('[data-tab="equipos"]').hidden = true;
       els.tabs.querySelector('[data-tab="habitaciones"]').hidden = true;
+      els.tabs.querySelector('[data-tab="staff"]').hidden = true;
     }
 
     bindTabs();
@@ -120,6 +124,7 @@
     await Promise.all([loadResumen(), loadTeams(), loadRooms()]);
     await Promise.all([loadPagos(), loadPeople()]);
     renderRooms();
+    bindStaff();
   }
 
   function esMaster() {
@@ -265,6 +270,66 @@
     }
     people = data || [];
     renderPeople();
+    renderStaff();
+  }
+
+  function rolOptions(sel) {
+    return ["participante", "admin", "master"]
+      .map((r) => `<option value="${r}" ${r === sel ? "selected" : ""}>${ROL_LABEL[r]}</option>`)
+      .join("");
+  }
+
+  async function setRole(personId, rol) {
+    const { error } = await sb.from("profiles").update({ rol }).eq("id", personId);
+    if (error) {
+      alert(`No se pudo cambiar el rol: ${error.message}`);
+      return;
+    }
+    await Promise.all([loadPeople(), loadResumen()]);
+  }
+
+  function renderStaff() {
+    const q = els.buscarStaff.value.trim().toLowerCase();
+    const lista = q
+      ? people.filter((p) => `${p.nombre || ""} ${p.email || ""}`.toLowerCase().includes(q))
+      : people;
+
+    const masters = people.filter((p) => p.rol === "master").length;
+    const admins = people.filter((p) => p.rol === "admin").length;
+    els.staffCount.textContent = `${masters} master · ${admins} admin · ${people.length} usuarios`;
+
+    if (!lista.length) {
+      els.adminStaff.innerHTML = '<p class="empty-note">Sin resultados.</p>';
+      return;
+    }
+
+    els.adminStaff.innerHTML = lista
+      .map(
+        (p) => `
+        <div class="person">
+          <div class="person__main">
+            ${avatarTag(p, "mini-avatar")}
+            <div class="person__data">
+              <strong>${esc(p.nombre || "Sin nombre")}${p.id === myId ? ' <span class="yo">Tú</span>' : ""}</strong>
+              <small>${esc(p.email || "")}</small>
+            </div>
+          </div>
+          <div class="person__controls">
+            <label class="mini-label">Rol
+              <select data-staff-rol="${p.id}">${rolOptions(p.rol)}</select>
+            </label>
+          </div>
+        </div>`
+      )
+      .join("");
+
+    els.adminStaff.querySelectorAll("select[data-staff-rol]").forEach((sel) =>
+      sel.addEventListener("change", () => setRole(sel.dataset.staffRol, sel.value))
+    );
+  }
+
+  function bindStaff() {
+    els.buscarStaff.addEventListener("input", renderStaff);
   }
 
   function renderPeople() {
@@ -290,11 +355,6 @@
       '<option value="">Sin equipo</option>' +
       teams
         .map((t) => `<option value="${t.id}" ${t.id === sel ? "selected" : ""}>${esc(t.nombre)}</option>`)
-        .join("");
-
-    const rolOptions = (sel) =>
-      ["participante", "admin", "master"]
-        .map((r) => `<option value="${r}" ${r === sel ? "selected" : ""}>${ROL_LABEL[r]}</option>`)
         .join("");
 
     const dis = esMaster() ? "" : "disabled";
@@ -397,14 +457,7 @@
     );
 
     els.adminPeople.querySelectorAll("select[data-rol]").forEach((sel) =>
-      sel.addEventListener("change", async () => {
-        const { error } = await sb.from("profiles").update({ rol: sel.value }).eq("id", sel.dataset.rol);
-        if (error) {
-          alert(`No se pudo cambiar el rol: ${error.message}`);
-          return;
-        }
-        await Promise.all([loadPeople(), loadResumen()]);
-      })
+      sel.addEventListener("change", () => setRole(sel.dataset.rol, sel.value))
     );
   }
 

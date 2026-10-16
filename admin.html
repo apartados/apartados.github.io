@@ -61,6 +61,7 @@
         <button type="button" data-tab="resumen" class="active">Resumen</button>
         <button type="button" data-tab="pagos">Pagos <span class="tab-badge" id="tabPagos" hidden>0</span></button>
         <button type="button" data-tab="participantes">Participantes</button>
+        <button type="button" data-tab="staff">Staff</button>
         <button type="button" data-tab="equipos">Equipos</button>
         <button type="button" data-tab="habitaciones">Habitaciones</button>
       </nav>
@@ -96,6 +97,23 @@
           <span class="admin-count" id="participantesCount"></span>
         </div>
         <div class="admin-people" id="adminPeople"></div>
+      </div>
+
+      <!-- Staff -->
+      <div class="admin-panel" id="tab-staff" hidden>
+        <p class="panel-muted">
+          Designa quién forma parte del staff. Como <strong>master</strong> puedes nombrar otros
+          organizadores (<em>admin</em>) e incluso otros <em>master</em>, para que el equipo no
+          dependa de una sola persona.
+        </p>
+        <div class="admin-toolbar">
+          <div class="field field--inline">
+            <label for="buscarStaff">Buscar</label>
+            <input id="buscarStaff" type="search" placeholder="Nombre o correo" />
+          </div>
+          <span class="admin-count" id="staffCount"></span>
+        </div>
+        <div class="admin-people" id="adminStaff"></div>
       </div>
 
       <!-- Equipos -->

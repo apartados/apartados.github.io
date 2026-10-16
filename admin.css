@@ -190,6 +190,20 @@ img.mini-avatar { display: block; }
 }
 .solicitud strong { color: var(--white); }
 
+.yo {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a0d00;
+  background: linear-gradient(100deg, var(--orange), var(--amber));
+  vertical-align: middle;
+}
+
 /* Inputs dentro de filas */
 .admin-row input[type="text"],
 .admin-row input[type="number"] {
