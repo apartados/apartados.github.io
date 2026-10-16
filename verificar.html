@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verificación · Apartados 2.0</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="verificar.css" />
+  <link rel="icon" href="https://commons.wikimedia.org/wiki/Special:FilePath/Seventh-day%20Adventist%20Church%20logo%20in%20Spanish.png" />
+</head>
+<body>
+  <div class="glow" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+    <span class="orb orb--3"></span>
+    <div class="grain"></div>
+  </div>
+
+  <main class="verif-main">
+    <a class="nav__brand verif-brand" href="index.html">
+      <span class="nav__name">APARTADOS <em>2.0</em></span>
+    </a>
+
+    <section class="verif-card glass" id="verifLoading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="verif-muted">Verificando…</p>
+    </section>
+
+    <section class="verif-card glass" id="verifOk" hidden>
+      <div class="verif-foto-wrap">
+        <img class="verif-foto" id="verifFoto" alt="" hidden />
+        <span class="verif-foto verif-foto--ini" id="verifIniciales">?</span>
+      </div>
+      <p class="verif-label" id="verifRol">Participante</p>
+      <h1 class="verif-nombre" id="verifNombre">—</h1>
+      <div class="verif-meta" id="verifMeta"></div>
+    </section>
+
+    <section class="verif-card glass" id="verifError" hidden>
+      <p class="verif-label">No identificado</p>
+      <h1 class="verif-nombre">QR no válido</h1>
+      <p class="verif-muted" id="verifErrorMsg">No pudimos identificar este código.</p>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js.js"></script>
+  <script src="verificar.js"></script>
+</body>
+</html>

@@ -411,6 +411,12 @@
     return canvas.toDataURL("image/png");
   }
 
+  function qrPayload() {
+    const dir = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+    const nombre = encodeURIComponent(profile.nombre || "");
+    return `${dir}verificar.html?t=${profile.qr_token}&n=${nombre}`;
+  }
+
   function paintQr() {
     if (!profile || !profile.qr_token || typeof qrcode !== "function") {
       els.qrBox.innerHTML = '<span class="qr-empty">Tu QR estará disponible en un momento.</span>';
@@ -419,7 +425,7 @@
     }
 
     const qr = qrcode(0, "M");
-    qr.addData(String(profile.qr_token));
+    qr.addData(qrPayload());
     qr.make();
 
     els.qrBox.innerHTML = `<img alt="Código QR de ${escapeHtml(profile.nombre || "participante")}" src="${qrToPng(qr, 6, 2)}" />`;
