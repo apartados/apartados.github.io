@@ -26,6 +26,17 @@
     qrDownload: document.getElementById("qrDownload"),
     passForm: document.getElementById("passForm"),
     passNote: document.getElementById("passNote"),
+    pagoForm: document.getElementById("pagoForm"),
+    pagoParte: document.getElementById("pagoParte"),
+    pagoTipo: document.getElementById("pagoTipo"),
+    pagoBanco: document.getElementById("pagoBanco"),
+    pagoMonto: document.getElementById("pagoMonto"),
+    pagoReferencia: document.getElementById("pagoReferencia"),
+    pagoArchivo: document.getElementById("pagoArchivo"),
+    pagoPreview: document.getElementById("pagoPreview"),
+    pagoNote: document.getElementById("pagoNote"),
+    pagosList: document.getElementById("pagosList"),
+    pagosBadge: document.getElementById("pagosBadge"),
     staffCard: document.getElementById("staffCard"),
     staffText: document.getElementById("staffText"),
   };
@@ -58,6 +69,7 @@
 
   /* ---------------- Sesión ---------------- */
   async function init() {
+    fillBanks();
     const { data } = await sb.auth.getSession();
     await render(data.session);
 
@@ -97,6 +109,7 @@
     loadTeams();
     loadRoom();
     paintQr();
+    loadPagos();
   }
 
   function paint() {
@@ -261,6 +274,172 @@
       .replace(/^-|-$/g, "");
     els.qrDownload.setAttribute("download", `qr-${slug}.png`);
   }
+
+  /* ---------------- Pagos ---------------- */
+  const BANCOS = [
+    "Banco de Venezuela", "Banesco", "BBVA Provincial", "Mercantil",
+    "Banco Nacional de Crédito (BNC)", "Banco Bicentenario", "Banco del Tesoro",
+    "Banplus", "Banco Exterior", "Banco Fondo Común", "Bancamiga", "Banco BOD",
+    "Banco del Sur", "Banco Plaza", "Bancrecer", "Mi Banco", "Banco Activo",
+    "Banco Caroní", "Banco Sofitasa", "Banco Venezolano de Crédito",
+    "Banco Digital de los Trabajadores", "Otro",
+  ];
+  const MAX_BYTES = 5 * 1024 * 1024;
+
+  function fillBanks() {
+    els.pagoBanco.innerHTML =
+      '<option value="">Selecciona tu banco</option>' +
+      BANCOS.map((b) => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+  }
+
+  async function loadPagos() {
+    if (!currentUser) return;
+    const { data, error } = await sb
+      .from("pagos")
+      .select("id, parte, tipo_pago, banco_origen, referencia, monto, moneda, estado, nota, comprobante_path, created_at")
+      .eq("profile_id", currentUser.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[panel] pagos", error);
+      els.pagosList.innerHTML = '<p class="pagos-empty">No se pudo cargar tus pagos.</p>';
+      return;
+    }
+    paintPagos(data || []);
+  }
+
+  async function paintPagos(pagos) {
+    const aprobadas = new Set(pagos.filter((p) => p.estado === "aprobado").map((p) => p.parte));
+    els.pagosBadge.textContent = `${aprobadas.size} / 2`;
+
+    // sugiere la parte que falta por pagar
+    if (aprobadas.has(1) && !aprobadas.has(2)) els.pagoParte.value = "2";
+    else if (!aprobadas.has(1)) els.pagoParte.value = "1";
+
+    if (!pagos.length) {
+      els.pagosList.innerHTML = '<p class="pagos-empty">Todavía no has enviado ningún comprobante.</p>';
+      return;
+    }
+
+    const tipoLabel = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
+    const estadoLabel = { en_revision: "En revisión", aprobado: "Aprobado", rechazado: "Rechazado" };
+
+    els.pagosList.innerHTML = pagos
+      .map((p) => {
+        const fecha = new Date(p.created_at).toLocaleDateString("es-VE", { day: "2-digit", month: "short", year: "numeric" });
+        const monto = p.monto ? ` · ${Number(p.monto).toLocaleString("es-VE")} ${p.moneda}` : "";
+        return `
+          <div class="pago-item">
+            <div class="pago-item__info">
+              <strong>Parte ${p.parte} · ${tipoLabel[p.tipo_pago] || p.tipo_pago}</strong>
+              <small>${escapeHtml(p.banco_origen)} · Ref. ${escapeHtml(p.referencia)}${monto} · ${fecha}</small>
+              ${p.nota ? `<small>Nota: ${escapeHtml(p.nota)}</small>` : ""}
+            </div>
+            <div class="pago-item__side">
+              <span class="estado estado--${p.estado}">${estadoLabel[p.estado] || p.estado}</span>
+              <a class="view" href="#" data-file="${escapeHtml(p.comprobante_path || "")}">Ver comprobante</a>
+            </div>
+          </div>`;
+      })
+      .join("");
+
+    els.pagosList.querySelectorAll("a.view").forEach((a) => {
+      a.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const path = a.dataset.file;
+        if (!path) return;
+        const { data, error } = await sb.storage.from("comprobantes").createSignedUrl(path, 3600);
+        if (error) {
+          setMessage(els.pagoNote, "No se pudo abrir el comprobante.", "error");
+          return;
+        }
+        window.open(data.signedUrl, "_blank", "noopener");
+      });
+    });
+  }
+
+  els.pagoArchivo.addEventListener("change", () => {
+    const file = els.pagoArchivo.files[0];
+    els.pagoPreview.hidden = true;
+    els.pagoPreview.innerHTML = "";
+    if (!file) return;
+
+    if (file.size > MAX_BYTES) {
+      setMessage(els.pagoNote, "El archivo supera los 5 MB.", "error");
+      els.pagoArchivo.value = "";
+      return;
+    }
+    if (file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      els.pagoPreview.innerHTML = `<img src="${url}" alt="Vista previa del comprobante" />`;
+      els.pagoPreview.hidden = false;
+    } else {
+      els.pagoPreview.innerHTML = `<span>${escapeHtml(file.name)}</span>`;
+      els.pagoPreview.hidden = false;
+    }
+  });
+
+  els.pagoForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const parte = Number(els.pagoParte.value);
+    const banco = els.pagoBanco.value.trim();
+    const referencia = els.pagoReferencia.value.trim();
+    const file = els.pagoArchivo.files[0];
+
+    if (!banco) return setMessage(els.pagoNote, "Selecciona el banco de origen.", "error");
+    if (!referencia) return setMessage(els.pagoNote, "Escribe la referencia de la transacción.", "error");
+    if (!file) return setMessage(els.pagoNote, "Adjunta el comprobante o captura del pago.", "error");
+    if (file.size > MAX_BYTES) return setMessage(els.pagoNote, "El archivo supera los 5 MB.", "error");
+
+    const btn = els.pagoForm.querySelector("button[type=submit]");
+    btn.disabled = true;
+    btn.textContent = "Enviando…";
+    setMessage(els.pagoNote, "Subiendo tu comprobante…", null);
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = `${currentUser.id}/parte${parte}-${Date.now()}.${ext}`;
+
+    const { error: upError } = await sb.storage
+      .from("comprobantes")
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+
+    if (upError) {
+      console.error("[panel] upload", upError);
+      btn.disabled = false;
+      btn.textContent = "Enviar comprobante";
+      setMessage(els.pagoNote, `No se pudo subir el archivo: ${upError.message}`, "error");
+      return;
+    }
+
+    const monto = els.pagoMonto.value.trim();
+    const { error: dbError } = await sb.from("pagos").insert({
+      profile_id: currentUser.id,
+      parte,
+      tipo_pago: els.pagoTipo.value,
+      banco_origen: banco,
+      referencia,
+      monto: monto === "" ? null : Number(monto),
+      comprobante_path: path,
+    });
+
+    btn.disabled = false;
+    btn.textContent = "Enviar comprobante";
+
+    if (dbError) {
+      console.error("[panel] insert pago", dbError);
+      await sb.storage.from("comprobantes").remove([path]);
+      setMessage(els.pagoNote, `No se pudo registrar el pago: ${dbError.message}`, "error");
+      return;
+    }
+
+    setMessage(els.pagoNote, "¡Comprobante enviado! Queda en revisión.", "ok");
+    els.pagoForm.reset();
+    els.pagoPreview.hidden = true;
+    els.pagoPreview.innerHTML = "";
+    await loadPagos();
+    setTimeout(() => setMessage(els.pagoNote, ""), 4000);
+  });
 
   /* ---------------- Login ---------------- */
   els.loginForm.addEventListener("submit", async (event) => {

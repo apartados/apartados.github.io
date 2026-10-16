@@ -105,6 +105,66 @@
           <a class="btn btn--primary btn--block" id="qrDownload" download>Descargar mi QR</a>
         </article>
 
+        <!-- Mis pagos -->
+        <article class="panel-card glass panel-card--wide">
+          <header class="panel-card__head">
+            <h2>Mis pagos</h2>
+            <span class="badge" id="pagosBadge">0 / 2</span>
+          </header>
+          <p class="panel-muted">
+            El aporte se paga en 2 partes. Registra los datos de tu pago y sube el comprobante o captura;
+            el equipo organizador lo verificará.
+          </p>
+
+          <form id="pagoForm" class="pago-form" novalidate>
+            <div class="grid-2">
+              <div class="field">
+                <label for="pagoParte">Parte del pago</label>
+                <select id="pagoParte">
+                  <option value="1">Primera parte</option>
+                  <option value="2">Segunda parte</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="pagoTipo">Tipo de pago</label>
+                <select id="pagoTipo">
+                  <option value="pago_movil">Pago móvil</option>
+                  <option value="transferencia">Transferencia</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="pagoBanco">Banco de origen</label>
+                <select id="pagoBanco" required></select>
+              </div>
+              <div class="field">
+                <label for="pagoMonto">Monto (opcional)</label>
+                <input id="pagoMonto" type="number" min="0" step="0.01" placeholder="0.00" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="pagoReferencia">Referencia de la transacción</label>
+              <input id="pagoReferencia" type="text" placeholder="Número de referencia" required />
+            </div>
+
+            <div class="field">
+              <label for="pagoArchivo">Comprobante o captura del pago</label>
+              <input id="pagoArchivo" type="file" accept="image/*,application/pdf" required />
+              <small class="error"></small>
+              <div class="file-preview" id="pagoPreview" hidden></div>
+            </div>
+
+            <button type="submit" class="btn btn--primary">Enviar comprobante</button>
+            <p class="form-note" id="pagoNote" role="status"></p>
+          </form>
+
+          <h3 class="pagos-sub">Pagos enviados</h3>
+          <div class="pagos-list" id="pagosList"></div>
+        </article>
+
         <!-- Cambiar contraseña -->
         <article class="panel-card glass panel-card--wide">
           <header class="panel-card__head">
