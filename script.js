@@ -52,7 +52,7 @@ const submitBtn = form.querySelector('button[type="submit"]');
 
 const rules = {
   nombre: (v) => v.trim().length >= 3 || "Escribe tu nombre completo.",
-  edad: (v) => (Number(v) >= 15 && Number(v) <= 30) || "Debes tener entre 15 y 30 años.",
+  edad: (v) => (Number(v) >= 15) || "Debes tener 15 años o más.",
   telefono: (v) => v.replace(/\D/g, "").length >= 7 || "Ingresa un teléfono válido.",
   email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Ingresa un correo válido.",
   password: (v) => v.length >= 8 || "La contraseña debe tener al menos 8 caracteres.",

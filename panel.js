@@ -706,8 +706,8 @@
     const edadTxt = els.infoEdad.value.trim();
 
     if (nombre.length < 3) return setMessage(els.infoNote, "Escribe tu nombre completo.", "error");
-    if (edadTxt !== "" && (Number(edadTxt) < 15 || Number(edadTxt) > 30)) {
-      return setMessage(els.infoNote, "La edad debe estar entre 15 y 30.", "error");
+    if (edadTxt !== "" && Number(edadTxt) < 15) {
+      return setMessage(els.infoNote, "La edad debe ser de 15 años en adelante.", "error");
     }
 
     const btn = els.infoForm.querySelector('button[type="submit"]');

@@ -327,6 +327,16 @@
     await Promise.all([loadPeople(), loadResumen()]);
   }
 
+  async function borrarCuenta(id, nombre) {
+    if (!confirm(`¿Borrar la cuenta de "${nombre}"?\n\nSe elimina el usuario, su perfil, su foto y sus pagos. No se puede deshacer.`)) return;
+    const { error } = await sb.rpc("borrar_cuenta", { p_id: id });
+    if (error) {
+      alert(`No se pudo borrar: ${error.message}`);
+      return;
+    }
+    await Promise.all([loadPeople(), loadResumen(), loadTeams()]);
+  }
+
   function renderStaff() {
     const q = els.buscarStaff.value.trim().toLowerCase();
     const lista = q
@@ -357,6 +367,11 @@
             <label class="mini-label">Rol
               <select data-staff-rol="${p.id}">${rolOptions(p.rol)}</select>
             </label>
+            ${
+              p.id !== myId
+                ? `<button class="btn btn--no btn--xs" data-borrar="${p.id}">Borrar</button>`
+                : ""
+            }
           </div>
         </div>`
       )
@@ -364,6 +379,13 @@
 
     els.adminStaff.querySelectorAll("select[data-staff-rol]").forEach((sel) =>
       sel.addEventListener("change", () => setRole(sel.dataset.staffRol, sel.value))
+    );
+
+    els.adminStaff.querySelectorAll("button[data-borrar]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const persona = people.find((p) => p.id === btn.dataset.borrar);
+        borrarCuenta(btn.dataset.borrar, persona?.nombre || "esta persona");
+      })
     );
   }
 
@@ -436,6 +458,11 @@
               <label class="mini-label">Rol
                 <select data-rol="${p.id}" ${esMaster() ? "" : "disabled"}>${rolOptions(p.rol)}</select>
               </label>
+              ${
+                esMaster() && p.id !== myId
+                  ? `<button class="btn btn--no btn--xs" data-borrar="${p.id}">Borrar</button>`
+                  : ""
+              }
             </div>
           </div>`;
       })
@@ -501,6 +528,13 @@
 
     els.adminPeople.querySelectorAll("select[data-rol]").forEach((sel) =>
       sel.addEventListener("change", () => setRole(sel.dataset.rol, sel.value))
+    );
+
+    els.adminPeople.querySelectorAll("button[data-borrar]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const persona = people.find((p) => p.id === btn.dataset.borrar);
+        borrarCuenta(btn.dataset.borrar, persona?.nombre || "esta persona");
+      })
     );
   }
 
