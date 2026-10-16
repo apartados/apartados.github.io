@@ -26,6 +26,12 @@
     buscarStaff: $("buscarStaff"),
     staffCount: $("staffCount"),
     adminStaff: $("adminStaff"),
+    comidaForm: $("comidaForm"),
+    comidaNombre: $("comidaNombre"),
+    comidaDia: $("comidaDia"),
+    comidaOrden: $("comidaOrden"),
+    comidaNote: $("comidaNote"),
+    adminComidas: $("adminComidas"),
     equipoForm: $("equipoForm"),
     equipoNombre: $("equipoNombre"),
     equipoColor: $("equipoColor"),
@@ -47,10 +53,10 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const TABS = ["resumen", "pagos", "participantes", "staff", "equipos", "habitaciones"];
+  const TABS = ["resumen", "pagos", "participantes", "comidas", "staff", "equipos", "habitaciones"];
   const ESTADO_LABEL = { en_revision: "Por verificar", aprobado: "Verificado", rechazado: "Rechazado" };
   const TIPO_LABEL = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
-  const ROL_LABEL = { participante: "Participante", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
+  const ROL_LABEL = { participante: "Participante", lector: "Lector QR", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
 
   let me = null;
   let myId = null;
@@ -128,11 +134,12 @@
     bindForms();
 
     await Promise.all([loadResumen(), loadTeams(), loadRooms()]);
-    const tareas = [loadPeople()];
+    const tareas = [loadPeople(), loadComidas()];
     if (esAdminOMaster()) tareas.push(loadPagos());
     await Promise.all(tareas);
     renderRooms();
     bindStaff();
+    els.comidaForm.hidden = !esAdminOMaster();
   }
 
   function esMaster() {
@@ -313,7 +320,7 @@
   }
 
   function rolOptions(sel) {
-    return ["participante", "staff", "admin", "master"]
+    return ["participante", "lector", "staff", "admin", "master"]
       .map((r) => `<option value="${r}" ${r === sel ? "selected" : ""}>${ROL_LABEL[r]}</option>`)
       .join("");
   }
@@ -540,6 +547,101 @@
 
   els.buscarParticipante.addEventListener("input", renderPeople);
 
+  /* ---------------- Comidas ---------------- */
+  async function loadComidas() {
+    const { data, error } = await sb.rpc("comidas_resumen");
+    if (error) {
+      console.error("[admin] comidas", error);
+      els.adminComidas.innerHTML = '<p class="empty-note">No se pudieron cargar las comidas.</p>';
+      return;
+    }
+    renderComidas(data || []);
+  }
+
+  function renderComidas(comidas) {
+    if (!comidas.length) {
+      els.adminComidas.innerHTML =
+        '<p class="empty-note">Todavía no hay comidas. ' +
+        (esAdminOMaster() ? "Crea la primera en el formulario de arriba." : "Pide al organizador que las cree.") +
+        "</p>";
+      return;
+    }
+
+    els.adminComidas.innerHTML = comidas
+      .map(
+        (c) => `
+        <div class="admin-row comida-row" data-comida="${c.id}">
+          <div class="admin-row__info">
+            <div>
+              <strong>${esc(c.nombre)}</strong>
+              <small>${c.dia} · <b>${c.comieron}</b> de ${c.participantes} comieron</small>
+            </div>
+          </div>
+          <div class="admin-row__side">
+            <button class="btn btn--ghost btn--xs" data-ver="${c.id}">Ver quiénes</button>
+            ${esAdminOMaster() ? `<button class="btn btn--no btn--xs" data-delcomida="${c.id}">Eliminar</button>` : ""}
+          </div>
+          <div class="comida-detalle" id="det-${c.id}" hidden></div>
+        </div>`
+      )
+      .join("");
+
+    els.adminComidas.querySelectorAll("button[data-ver]").forEach((btn) =>
+      btn.addEventListener("click", () => toggleDetalleComida(btn.dataset.ver))
+    );
+    els.adminComidas.querySelectorAll("button[data-delcomida]").forEach((btn) =>
+      btn.addEventListener("click", () => borrarComida(btn.dataset.delcomida))
+    );
+  }
+
+  async function toggleDetalleComida(id) {
+    const box = document.getElementById(`det-${id}`);
+    if (!box) return;
+    if (!box.hidden) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+    box.innerHTML = '<p class="empty-note">Cargando…</p>';
+
+    const { data, error } = await sb.rpc("comida_asistentes", { p_comida: id });
+    if (error) {
+      box.innerHTML = `<p class="empty-note">${esc(error.message)}</p>`;
+      return;
+    }
+    const lista = data || [];
+    const comieron = lista.filter((p) => p.asistio).length;
+    const faltan = lista.filter((p) => !p.asistio);
+
+    box.innerHTML = `
+      <div class="comida-resumen">
+        <span class="verif-chip"><span class="dot" style="background:#7ee2a0"></span>Comieron: ${comieron}</span>
+        <span class="verif-chip"><span class="dot" style="background:#ff9a9a"></span>Faltan: ${faltan.length}</span>
+      </div>
+      <div class="comida-lista">
+        ${lista
+          .map(
+            (p) => `
+          <div class="comida-persona ${p.asistio ? "is-ok" : "is-no"}">
+            <span class="comida-persona__mark">${p.asistio ? "✓" : "—"}</span>
+            <span class="comida-persona__name">${esc(p.nombre)}</span>
+            <span class="comida-persona__team">${p.equipo ? esc(p.equipo) : "Sin equipo"}</span>
+          </div>`
+          )
+          .join("")}
+      </div>`;
+  }
+
+  async function borrarComida(id) {
+    if (!confirm("¿Eliminar esta comida y sus registros?")) return;
+    const { error } = await sb.from("comidas").delete().eq("id", id);
+    if (error) {
+      alert(`No se pudo eliminar: ${error.message}`);
+      return;
+    }
+    await Promise.all([loadComidas(), loadResumen()]);
+  }
+
   /* ---------------- Equipos ---------------- */
   async function loadTeams() {
     const { data, error } = await sb.rpc("equipos_resumen");
@@ -696,6 +798,26 @@
       els.equipoNote.className = "form-note ok";
       await Promise.all([loadTeams(), loadResumen()]);
       setTimeout(() => (els.equipoNote.textContent = ""), 3000);
+    });
+
+    els.comidaForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const { error } = await sb.from("comidas").insert({
+        nombre: els.comidaNombre.value.trim(),
+        dia: els.comidaDia.value,
+        orden: Number(els.comidaOrden.value) || 0,
+      });
+      if (error) {
+        els.comidaNote.textContent = error.message;
+        els.comidaNote.className = "form-note error";
+        return;
+      }
+      els.comidaForm.reset();
+      els.comidaOrden.value = 0;
+      els.comidaNote.textContent = "Comida agregada.";
+      els.comidaNote.className = "form-note ok";
+      await Promise.all([loadComidas(), loadResumen()]);
+      setTimeout(() => (els.comidaNote.textContent = ""), 3000);
     });
 
     els.habitacionForm.addEventListener("submit", async (e) => {

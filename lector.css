@@ -1,0 +1,84 @@
+/* ---------- Lector de QR (cámara) ---------- */
+.lector-body { min-height: 100svh; }
+
+.lector-main {
+  width: min(100% - 32px, 640px);
+  margin: 0 auto;
+  padding: 118px 0 60px;
+}
+
+.lector-head { margin-bottom: 18px; }
+.lector-head h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.lector-meal select { width: 100%; }
+
+.cam-wrap {
+  position: relative;
+  margin: 18px 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+}
+.cam-wrap video { width: 100%; height: 100%; object-fit: cover; }
+.cam-frame {
+  position: absolute;
+  inset: 14% 12%;
+  border: 3px solid rgba(255, 181, 71, 0.85);
+  border-radius: 22px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  display: none;
+}
+.cam-wrap.is-active .cam-frame { display: block; }
+
+.cam-result {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 22px 18px 26px;
+  text-align: center;
+  display: grid;
+  gap: 4px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 55%);
+}
+.cam-result__status {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.cam-result--ok .cam-result__status { color: #9dffb0; }
+.cam-result--dup .cam-result__status { color: #ffd166; }
+.cam-result--bad .cam-result__status { color: #ff9a9a; }
+.cam-result__name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 7vw, 2.2rem);
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 1.05;
+}
+.cam-result__meal { font-size: 0.82rem; color: var(--cream-2); }
+.cam-result--ok { box-shadow: inset 0 0 0 4px rgba(120, 255, 160, 0.55); }
+.cam-result--dup { box-shadow: inset 0 0 0 4px rgba(255, 209, 102, 0.55); }
+.cam-result--bad { box-shadow: inset 0 0 0 4px rgba(255, 120, 120, 0.55); }
+
+.lector-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.lector-manual { margin-top: 26px; border-radius: var(--radius-sm); padding: 14px 18px; }
+.lector-manual summary { cursor: pointer; font-size: 0.88rem; color: var(--cream-2); }
+.lector-manual__body { display: flex; gap: 12px; align-items: flex-end; margin-top: 14px; flex-wrap: wrap; }
+.lector-manual__body .field { flex: 1 1 220px; margin-bottom: 0; }
+
+@media (min-width: 720px) {
+  .cam-wrap { aspect-ratio: 4 / 3; }
+}

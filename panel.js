@@ -75,7 +75,7 @@
   let currentUser = null;
   let profile = null;
 
-  const ROL_LABEL = { participante: "Participante", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
+  const ROL_LABEL = { participante: "Participante", lector: "Lector QR", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
 
   function show(view) {
     [els.loading, els.login, els.panel].forEach((el) => (el.hidden = true));
@@ -411,6 +411,66 @@
     return canvas.toDataURL("image/png");
   }
 
+  // Tarjeta descargable: QR + nombre y apellido impresos
+  function qrCardDataUrl(qr, nombre) {
+    const CELL = 10;
+    const MARGIN = 4;
+    const count = qr.getModuleCount();
+    const qrPx = (count + MARGIN * 2) * CELL;
+
+    const W = Math.max(qrPx + 140, 760);
+    const top = 34;
+    const titleH = 56;
+    const gap = 30;
+    const nameSize = 52;
+    const bottom = 56;
+    const H = top + titleH + gap + qrPx + gap + nameSize + bottom;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const font = "Outfit, 'Segoe UI', Arial, sans-serif";
+
+    // Encabezado
+    ctx.fillStyle = "#0a0806";
+    ctx.font = `700 32px ${font}`;
+    ctx.fillText("APARTADOS 2.0", W / 2, top + titleH / 2);
+
+    // Código QR
+    const x0 = (W - qrPx) / 2;
+    const y0 = top + titleH + gap;
+    ctx.fillStyle = "#000000";
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect(x0 + (c + MARGIN) * CELL, y0 + (r + MARGIN) * CELL, CELL, CELL);
+        }
+      }
+    }
+
+    // Nombre y apellido (se reduce si es muy largo)
+    const texto = String(nombre || "Participante").trim().toUpperCase();
+    const maxW = W - 70;
+    let size = nameSize;
+    do {
+      ctx.font = `800 ${size}px ${font}`;
+      if (ctx.measureText(texto).width <= maxW) break;
+      size -= 2;
+    } while (size > 22);
+
+    ctx.fillStyle = "#b03a00";
+    ctx.fillText(texto, W / 2, y0 + qrPx + gap + nameSize / 2);
+
+    return canvas.toDataURL("image/png");
+  }
+
   function qrPayload() {
     const dir = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
     const nombre = profile.nombre || "";
@@ -431,7 +491,7 @@
     qr.make();
 
     els.qrBox.innerHTML = `<img alt="Código QR de ${escapeHtml(profile.nombre || "participante")}" src="${qrToPng(qr, 6, 2)}" />`;
-    els.qrDownload.href = qrToPng(qr, 12, 4);
+    els.qrDownload.href = qrCardDataUrl(qr, profile.nombre);
     const slug = (profile.nombre || "participante")
       .toLowerCase()
       .normalize("NFD")

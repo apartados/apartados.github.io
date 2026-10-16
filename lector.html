@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Lector de QR · Apartados 2.0</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="panel.css" />
+  <link rel="stylesheet" href="lector.css" />
+  <link rel="icon" href="https://commons.wikimedia.org/wiki/Special:FilePath/Seventh-day%20Adventist%20Church%20logo%20in%20Spanish.png" />
+</head>
+<body class="lector-body">
+  <div class="glow" aria-hidden="true">
+    <span class="orb orb--1"></span>
+    <span class="orb orb--2"></span>
+    <span class="orb orb--3"></span>
+    <div class="grain"></div>
+  </div>
+
+  <header class="panel-top glass">
+    <a class="nav__brand" href="panel.html"><span class="nav__name">APARTADOS <em>2.0</em></span></a>
+    <div class="panel-top__right">
+      <span class="panel-top__email" id="userEmail"></span>
+      <button class="btn btn--ghost btn--sm" id="logoutBtn" hidden>Salir</button>
+    </div>
+  </header>
+
+  <main class="lector-main">
+    <section class="panel-loading" id="viewLoading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Cargando lector…</p>
+    </section>
+
+    <section id="viewLogin" hidden>
+      <form class="panel-card glass panel-card--narrow" id="loginForm" novalidate>
+        <p class="eyebrow">Control de comidas</p>
+        <h1>Acceso del lector</h1>
+        <p class="panel-muted">Entra con el usuario que te asignó el organizador.</p>
+        <div class="field">
+          <label for="loginEmail">Correo</label>
+          <input id="loginEmail" type="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="loginPass">Contraseña</label>
+          <input id="loginPass" type="password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn--primary btn--block">Entrar</button>
+        <p class="form-note" id="loginNote" role="status"></p>
+      </form>
+    </section>
+
+    <section id="viewDenied" hidden>
+      <div class="panel-card glass panel-card--narrow">
+        <p class="eyebrow">Acceso restringido</p>
+        <h1>Sin permisos</h1>
+        <p class="panel-muted">Este usuario no está habilitado para escanear.</p>
+        <a class="btn btn--primary" href="panel.html">Volver a mi panel</a>
+      </div>
+    </section>
+
+    <section id="viewLector" hidden>
+      <div class="lector-head">
+        <p class="eyebrow">Registro de comidas</p>
+        <h1>Escanear QR</h1>
+      </div>
+
+      <div class="field lector-meal">
+        <label for="mealSelect">Comida a registrar</label>
+        <select id="mealSelect"></select>
+      </div>
+      <p class="panel-muted" id="mealHint">Elige la comida y presiona «Activar cámara».</p>
+
+      <div class="cam-wrap" id="camWrap">
+        <video id="cam" playsinline muted autoplay></video>
+        <div class="cam-frame"></div>
+        <div class="cam-result" id="camResult" hidden>
+          <span class="cam-result__status" id="resultStatus"></span>
+          <strong class="cam-result__name" id="resultName"></strong>
+          <small class="cam-result__meal" id="resultMeal"></small>
+        </div>
+      </div>
+
+      <div class="lector-actions">
+        <button class="btn btn--primary" id="startCam">Activar cámara</button>
+        <button class="btn btn--ghost" id="stopCam" hidden>Detener</button>
+      </div>
+      <p class="form-note" id="camNote" role="status"></p>
+
+      <details class="lector-manual glass">
+        <summary>Sin cámara: escribir el código del QR manualmente</summary>
+        <div class="lector-manual__body">
+          <div class="field">
+            <label for="manualToken">Nombre o código</label>
+            <input id="manualToken" type="text" placeholder="Pega el contenido del QR o el código" />
+          </div>
+          <button class="btn btn--primary btn--sm" id="manualBtn">Registrar</button>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js.js"></script>
+  <script src="vendor/jsQR.js"></script>
+  <script src="lector.js"></script>
+</body>
+</html>

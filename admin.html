@@ -61,6 +61,7 @@
         <button type="button" data-tab="resumen" class="active">Resumen</button>
         <button type="button" data-tab="pagos">Pagos <span class="tab-badge" id="tabPagos" hidden>0</span></button>
         <button type="button" data-tab="participantes">Participantes</button>
+        <button type="button" data-tab="comidas">Comidas</button>
         <button type="button" data-tab="staff">Staff</button>
         <button type="button" data-tab="equipos">Equipos</button>
         <button type="button" data-tab="habitaciones">Habitaciones</button>
@@ -109,6 +110,24 @@
           <span class="admin-count" id="participantesCount"></span>
         </div>
         <div class="admin-people" id="adminPeople"></div>
+      </div>
+
+      <!-- Comidas -->
+      <div class="admin-panel" id="tab-comidas" hidden>
+        <p class="panel-muted">
+          Control de comidas escaneadas con el QR. Aquí ves <strong>quiénes comieron y quiénes no</strong>.
+          El registro lo hace el <strong>lector</strong> desde <a href="lector.html">lector.html</a>.
+        </p>
+
+        <form class="admin-add glass" id="comidaForm" hidden>
+          <div class="field"><label>Nombre</label><input id="comidaNombre" type="text" placeholder="Desayuno" required /></div>
+          <div class="field"><label>Día</label><input id="comidaDia" type="date" required /></div>
+          <div class="field"><label>Orden</label><input id="comidaOrden" type="number" min="0" value="0" /></div>
+          <button type="submit" class="btn btn--primary">Agregar comida</button>
+          <p class="form-note" id="comidaNote" role="status"></p>
+        </form>
+
+        <div class="admin-list" id="adminComidas"></div>
       </div>
 
       <!-- Staff -->
