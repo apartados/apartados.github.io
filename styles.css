@@ -209,6 +209,12 @@ p { margin: 0; }
   margin-bottom: 14px;
 }
 
+.hero__copy .eyebrow {
+  display: block;
+  text-align: center;
+  line-height: 1.5;
+}
+
 .hero h1 {
   font-family: var(--font-display);
   font-weight: 400;
