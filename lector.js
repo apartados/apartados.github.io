@@ -42,6 +42,10 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  const sessionGuard = window.initSessionGuard
+    ? window.initSessionGuard(sb, { idleMinutes: Number(CONFIG.SESSION_IDLE_MINUTES) || 30 })
+    : null;
+
   let stream = null;
   let rafId = 0;
   let canvas = null;
@@ -159,6 +163,7 @@
   }
 
   async function registrar(token) {
+    if (sessionGuard) sessionGuard.reset(); // escanear cuenta como actividad
     const comida = els.mealSelect.value;
     if (!comida) {
       beep("bad");

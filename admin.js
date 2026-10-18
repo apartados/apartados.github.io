@@ -53,6 +53,10 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  if (window.initSessionGuard) {
+    window.initSessionGuard(sb, { idleMinutes: Number(CONFIG.SESSION_IDLE_MINUTES) || 30 });
+  }
+
   const TABS = ["resumen", "pagos", "participantes", "comidas", "staff", "equipos", "habitaciones"];
   const ESTADO_LABEL = { en_revision: "Por verificar", aprobado: "Verificado", rechazado: "Rechazado" };
   const TIPO_LABEL = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
