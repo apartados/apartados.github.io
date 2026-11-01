@@ -92,6 +92,21 @@
     if (type) el.classList.add(type);
   }
 
+
+  function mensajeAuth(error) {
+    const msg = String((error && error.message) || "");
+    if (/invalid login credentials|invalid_grant|invalid credentials/i.test(msg)) {
+      return "Correo o contraseña incorrectos.";
+    }
+    if (/email not confirmed/i.test(msg)) {
+      return "Tu correo aún no está confirmado.";
+    }
+    if (/failed to fetch|networkerror|network error|name_not_resolved|load failed|fetch/i.test(msg)) {
+      return "No se pudo conectar con el servidor. Revisa tu conexión o que el servicio esté activo.";
+    }
+    return msg || "No se pudo iniciar sesión.";
+  }
+
   function emptyDash(value) {
     return value === null || value === undefined || value === "" ? "—" : String(value);
   }
@@ -833,7 +848,7 @@
     btn.textContent = "Entrar";
 
     if (error) {
-      setMessage(els.loginNote, "Correo o contraseña incorrectos.", "error");
+      setMessage(els.loginNote, mensajeAuth(error), "error");
       return;
     }
     els.loginForm.reset();

@@ -152,9 +152,12 @@ form.addEventListener("submit", async (event) => {
   if (error) {
     console.error("[registro]", error);
     const yaExiste = /already registered|already exists/i.test(error.message);
+    const esRed = /failed to fetch|network|name_not_resolved|load failed|fetch/i.test(error.message || "");
     setNote(
       yaExiste
         ? "Ese correo ya tiene una cuenta. Entra a tu panel o usa otro correo."
+        : esRed
+        ? "No se pudo conectar con el servidor. Revisa tu conexión o que el servicio esté activo."
         : `No pudimos crear tu cuenta: ${error.message}`,
       "error"
     );

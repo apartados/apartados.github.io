@@ -54,6 +54,21 @@
   let lastTime = 0;
   let resultTimer = 0;
 
+
+  function mensajeAuth(error) {
+    const msg = String((error && error.message) || "");
+    if (/invalid login credentials|invalid_grant|invalid credentials/i.test(msg)) {
+      return "Correo o contraseña incorrectos.";
+    }
+    if (/email not confirmed/i.test(msg)) {
+      return "Tu correo aún no está confirmado.";
+    }
+    if (/failed to fetch|networkerror|network error|name_not_resolved|load failed|fetch/i.test(msg)) {
+      return "No se pudo conectar con el servidor. Revisa tu conexión o que el servicio esté activo.";
+    }
+    return msg || "No se pudo iniciar sesión.";
+  }
+
   function show(view) {
     [els.loading, els.login, els.denied, els.lector].forEach((el) => (el.hidden = true));
     view.hidden = false;
@@ -280,7 +295,7 @@
     });
     btn.disabled = false;
     btn.textContent = "Entrar";
-    if (error) setNote(els.loginNote, "Correo o contraseña incorrectos.", "error");
+    if (error) setNote(els.loginNote, mensajeAuth(error), "error");
     else els.loginForm.reset();
   });
 
