@@ -87,6 +87,20 @@
               <h2>Mi información</h2>
               <button type="button" class="btn btn--ghost btn--xs" id="btnEditarInfo" hidden>Editar</button>
             </header>
+
+            <div class="info-photo">
+              <img class="info-photo__img" id="infoPhotoImg" alt="Foto de perfil" hidden />
+              <span class="info-photo__img info-photo__img--ini" id="infoPhotoIni">?</span>
+              <div class="info-photo__actions">
+                <div class="info-photo__btns">
+                  <button type="button" class="btn btn--ghost btn--xs" id="btnCambiarFoto">Cambiar foto</button>
+                  <button type="button" class="btn btn--ghost btn--xs" id="btnQuitarFoto" hidden>Quitar foto</button>
+                </div>
+                <p class="info-photo__hint" id="infoPhotoHint">No has subido una foto.</p>
+                <p class="form-note" id="infoPhotoNote" role="status"></p>
+              </div>
+            </div>
+
             <dl class="info-list" id="infoList"></dl>
 
             <form class="info-form" id="infoForm" novalidate hidden>

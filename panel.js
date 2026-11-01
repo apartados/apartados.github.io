@@ -62,6 +62,12 @@
     infoNotas: document.getElementById("infoNotas"),
     infoNote: document.getElementById("infoNote"),
     btnCancelarInfo: document.getElementById("btnCancelarInfo"),
+    infoPhotoImg: document.getElementById("infoPhotoImg"),
+    infoPhotoIni: document.getElementById("infoPhotoIni"),
+    infoPhotoHint: document.getElementById("infoPhotoHint"),
+    infoPhotoNote: document.getElementById("infoPhotoNote"),
+    btnCambiarFoto: document.getElementById("btnCambiarFoto"),
+    btnQuitarFoto: document.getElementById("btnQuitarFoto"),
     staffCard: document.getElementById("sec-organizadores"),
     staffText: document.getElementById("staffText"),
   };
@@ -181,33 +187,82 @@
   function paintAvatar() {
     const path = profile?.avatar_path;
     const nombre = profile?.nombre || currentUser?.email || "";
+    const initials = initialsOf(nombre);
+
     if (path) {
-      els.avatarImg.src = avatarUrl(path);
+      const url = avatarUrl(path);
+      els.avatarImg.src = url;
       els.avatarImg.hidden = false;
-      els.avatarInitials.textContent = initialsOf(nombre);
+      els.avatarInitials.textContent = initials;
+
+      els.infoPhotoImg.src = url;
+      els.infoPhotoImg.hidden = false;
+      els.infoPhotoIni.hidden = true;
+
+      els.btnQuitarFoto.hidden = false;
+      els.infoPhotoHint.textContent = "Foto de perfil cargada.";
+      els.infoPhotoHint.classList.add("is-ok");
     } else {
       els.avatarImg.hidden = true;
       els.avatarImg.removeAttribute("src");
-      els.avatarInitials.textContent = initialsOf(nombre);
+      els.avatarInitials.textContent = initials;
+
+      els.infoPhotoImg.hidden = true;
+      els.infoPhotoImg.removeAttribute("src");
+      els.infoPhotoIni.textContent = initials;
+      els.infoPhotoIni.hidden = false;
+
+      els.btnQuitarFoto.hidden = true;
+      els.infoPhotoHint.textContent = "No has subido una foto.";
+      els.infoPhotoHint.classList.remove("is-ok");
     }
   }
+
+  function photoMsg(text, type) {
+    setMessage(els.avatarNote, text, type);
+    setMessage(els.infoPhotoNote, text, type);
+  }
+
+  els.btnCambiarFoto.addEventListener("click", () => els.avatarInput.click());
+
+  els.btnQuitarFoto.addEventListener("click", async () => {
+    if (!profile?.avatar_path) return;
+    if (!confirm("¿Quitar tu foto de perfil?")) return;
+
+    const previo = profile.avatar_path;
+    els.btnQuitarFoto.disabled = true;
+    setMessage(els.infoPhotoNote, "Quitando…", null);
+
+    const { error } = await sb.rpc("actualizar_avatar", { p_path: null });
+    els.btnQuitarFoto.disabled = false;
+
+    if (error) {
+      setMessage(els.infoPhotoNote, error.message, "error");
+      return;
+    }
+    await sb.storage.from("avatares").remove([previo]).catch(() => {});
+    profile.avatar_path = null;
+    paintAvatar();
+    setMessage(els.infoPhotoNote, "Foto eliminada.", "ok");
+    setTimeout(() => setMessage(els.infoPhotoNote, ""), 2500);
+  });
 
   els.avatarInput.addEventListener("change", async () => {
     const file = els.avatarInput.files[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setMessage(els.avatarNote, "Elige una imagen (JPG, PNG o WebP).", "error");
+      photoMsg("Elige una imagen (JPG, PNG o WebP).", "error");
       return;
     }
     if (file.size > 3 * 1024 * 1024) {
-      setMessage(els.avatarNote, "La imagen supera los 3 MB.", "error");
+      photoMsg("La imagen supera los 3 MB.", "error");
       return;
     }
 
     const label = els.avatarInput.closest(".avatar");
     label.classList.add("is-loading");
-    setMessage(els.avatarNote, "Subiendo tu foto…", null);
+    photoMsg("Subiendo tu foto…", null);
 
     const previo = profile?.avatar_path || null;
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -219,7 +274,7 @@
 
     if (upError) {
       label.classList.remove("is-loading");
-      setMessage(els.avatarNote, `No se pudo subir la foto: ${upError.message}`, "error");
+      photoMsg(`No se pudo subir la foto: ${upError.message}`, "error");
       return;
     }
 
@@ -227,7 +282,7 @@
     if (rpcError) {
       label.classList.remove("is-loading");
       await sb.storage.from("avatares").remove([path]);
-      setMessage(els.avatarNote, rpcError.message, "error");
+      photoMsg(rpcError.message, "error");
       return;
     }
 
@@ -237,8 +292,8 @@
     label.classList.remove("is-loading");
     els.avatarInput.value = "";
     paintAvatar();
-    setMessage(els.avatarNote, "¡Foto actualizada!", "ok");
-    setTimeout(() => setMessage(els.avatarNote, ""), 3000);
+    photoMsg("¡Foto actualizada!", "ok");
+    setTimeout(() => photoMsg("", null), 3000);
   });
 
   function paint() {
