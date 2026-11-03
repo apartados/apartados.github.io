@@ -26,6 +26,11 @@
     buscarStaff: $("buscarStaff"),
     staffCount: $("staffCount"),
     adminStaff: $("adminStaff"),
+    fichaSelector: $("fichaSelector"),
+    fichaSelect: $("fichaSelect"),
+    fichaOverlay: $("fichaOverlay"),
+    fichaBody: $("fichaBody"),
+    fichaClose: $("fichaClose"),
     comidaForm: $("comidaForm"),
     comidaNombre: $("comidaNombre"),
     comidaDia: $("comidaDia"),
@@ -138,6 +143,7 @@
     if (!esAdminOMaster()) {
       els.tabs.querySelector('[data-tab="ajustes"]').hidden = true;
     }
+    els.fichaSelector.hidden = prof.rol !== "master";
     // Cobranzas: solo admin y master (el staff no las ve)
     if (!esAdminOMaster()) {
       els.tabs.querySelector('[data-tab="pagos"]').hidden = true;
@@ -152,6 +158,7 @@
     await Promise.all(tareas);
     renderRooms();
     bindStaff();
+    bindFicha();
     els.comidaForm.hidden = !esAdminOMaster();
   }
 
@@ -338,6 +345,60 @@
       .join("");
   }
 
+  /* ---------------- Ficha del participante (master) ---------------- */
+  function abrirFicha(id) {
+    const p = people.find((x) => x.id === id);
+    if (!p) return;
+
+    const url = avatarUrl(p.avatar_path);
+    const foto = url
+      ? `<img src="${esc(url)}" alt="${esc(p.nombre || "")}" />`
+      : `<span class="ficha-avatar">${esc(initials(p.nombre))}</span>`;
+
+    const equipo = p.equipo_nombre
+      ? `<span class="color-chip" style="background:${esc(p.equipo_color)}"></span> ${esc(p.equipo_nombre)}`
+      : "Sin equipo";
+    const solicitud = p.equipo_pendiente_nombre
+      ? ` (solicitó ${esc(p.equipo_pendiente_nombre)})`
+      : "";
+    const fecha = new Date(p.created_at).toLocaleString("es-VE", {
+      day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
+    });
+
+    const filas = [
+      ["Correo", p.email],
+      ["Teléfono / WhatsApp", p.telefono],
+      ["Edad", p.edad],
+      ["Iglesia / Distrito", p.iglesia],
+      ["Talla de camiseta", p.talla],
+      ["Contacto de emergencia", p.emergencia],
+      ["Alergias / condiciones", p.notas],
+      ["Equipo", equipo + solicitud],
+      ["Habitación", p.habitacion_nombre || "Sin asignar"],
+      ["Inscripción", fecha],
+    ];
+
+    els.fichaBody.innerHTML = `
+      <div class="ficha-head">
+        ${foto}
+        <div>
+          <h2 id="fichaNombre">${esc(p.nombre || "Sin nombre")}</h2>
+          <small>${esc(ROL_LABEL[p.rol] || p.rol)}</small>
+        </div>
+      </div>
+      <dl class="ficha-list">
+        ${filas.map(([k, v]) => `<div><dt>${k}</dt><dd>${v === null || v === undefined || v === "" ? "—" : (k === "Equipo" ? v : esc(v))}</dd></div>`).join("")}
+      </dl>`;
+
+    els.fichaOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function cerrarFicha() {
+    els.fichaOverlay.hidden = true;
+    document.body.style.overflow = "";
+  }
+
   async function setRole(personId, rol) {
     const { error } = await sb.from("profiles").update({ rol }).eq("id", personId);
     if (error) {
@@ -407,6 +468,20 @@
         borrarCuenta(btn.dataset.borrar, persona?.nombre || "esta persona");
       })
     );
+  }
+
+  function bindFicha() {
+    els.fichaClose.addEventListener("click", cerrarFicha);
+    els.fichaOverlay.addEventListener("click", (e) => {
+      if (e.target === els.fichaOverlay) cerrarFicha();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") cerrarFicha();
+    });
+    els.fichaSelect.addEventListener("change", () => {
+      if (els.fichaSelect.value) abrirFicha(els.fichaSelect.value);
+      els.fichaSelect.value = "";
+    });
   }
 
   function bindStaff() {
@@ -480,7 +555,8 @@
               </label>
               ${
                 esMaster() && p.id !== myId
-                  ? `<button class="btn btn--no btn--xs" data-borrar="${p.id}">Borrar</button>`
+                  ? `<button class="btn btn--ghost btn--xs" data-ficha="${p.id}">Ver ficha</button>
+                     <button class="btn btn--no btn--xs" data-borrar="${p.id}">Borrar</button>`
                   : ""
               }
             </div>
@@ -556,6 +632,19 @@
         borrarCuenta(btn.dataset.borrar, persona?.nombre || "esta persona");
       })
     );
+
+    els.adminPeople.querySelectorAll("button[data-ficha]").forEach((btn) =>
+      btn.addEventListener("click", () => abrirFicha(btn.dataset.ficha))
+    );
+
+    // select de ficha (solo master)
+    if (esMaster()) {
+      els.fichaSelect.innerHTML =
+        '<option value="">Elegir participante…</option>' +
+        lista
+          .map((p) => `<option value="${p.id}">${esc(p.nombre || p.email)} — ${esc(p.email)}</option>`)
+          .join("");
+    }
   }
 
   els.buscarParticipante.addEventListener("input", renderPeople);

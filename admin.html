@@ -110,6 +110,10 @@
           </div>
           <span class="admin-count" id="participantesCount"></span>
         </div>
+        <div class="ficha-selector glass" id="fichaSelector" hidden>
+          <label for="fichaSelect">Ver ficha de un participante</label>
+          <select id="fichaSelect"><option value="">Elegir participante…</option></select>
+        </div>
         <div class="admin-people" id="adminPeople"></div>
       </div>
 
@@ -207,6 +211,13 @@
       </div>
     </section>
   </main>
+
+  <div class="modal-overlay" id="fichaOverlay" hidden>
+    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="fichaNombre">
+      <button class="modal__close" id="fichaClose" aria-label="Cerrar">&times;</button>
+      <div class="modal__body" id="fichaBody"></div>
+    </div>
+  </div>
 
   <script src="config.js"></script>
   <script src="analytics.js"></script>
