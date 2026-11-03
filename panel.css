@@ -525,3 +525,33 @@ img.info-photo__img { display: block; }
   .panel-top { border-radius: 24px; }
   .pago-pill { min-width: 100%; }
 }
+
+/* Chip de color / datos bancarios */
+.color-chip {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.banco-box {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 12px;
+}
+.banco-box__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.banco-box__item { display: grid; gap: 3px; }
+.banco-box__item strong { color: var(--white); font-size: 0.92rem; }
+.banco-box__item span { font-size: 0.86rem; color: var(--cream-2); }
+.banco-box__nota { font-style: italic; color: var(--cream-2); font-size: 0.84rem; }

@@ -43,6 +43,7 @@
     pagosList: document.getElementById("pagosList"),
     pagosBadge: document.getElementById("pagosBadge"),
     pagoEstado: document.getElementById("pagoEstado"),
+    datosBanco: document.getElementById("datosBanco"),
     panelBurger: document.getElementById("panelBurger"),
     panelSide: document.getElementById("panelSide"),
     panelOverlay: document.getElementById("panelOverlay"),
@@ -154,7 +155,7 @@
 
     const { data, error } = await sb
       .from("profiles")
-      .select("id, nombre, email, telefono, edad, iglesia, talla, emergencia, notas, rol, qr_token, equipo_id, equipo_pendiente_id, habitacion_id")
+      .select("id, nombre, email, telefono, edad, iglesia, talla, emergencia, notas, rol, qr_token, avatar_path, equipo_id, equipo_pendiente_id, habitacion_id, equipo:equipos!profiles_equipo_fk(nombre, color)")
       .eq("id", session.user.id)
       .maybeSingle();
 
@@ -170,6 +171,7 @@
     loadRoom();
     paintQr();
     loadPagos();
+    loadBanco();
   }
 
   /* ---------------- Foto de perfil ---------------- */
@@ -317,9 +319,16 @@
       ["Alergias / notas", profile.notas],
       ["Rol", ROL_LABEL[profile.rol] || profile.rol],
     ];
-    els.infoList.innerHTML = rows
-      .map(([k, v]) => `<div><dt>${k}</dt><dd>${escapeHtml(emptyDash(v))}</dd></div>`)
-      .join("");
+    let filaEquipo = "";
+    if (profile.rol === "participante") {
+      filaEquipo = profile.equipo
+        ? `<div><dt>Equipo</dt><dd><span class="color-chip" style="background:${escapeHtml(profile.equipo.color)}"></span> ${escapeHtml(profile.equipo.nombre)}</dd></div>`
+        : `<div><dt>Equipo</dt><dd>Sin equipo</dd></div>`;
+    }
+
+    els.infoList.innerHTML =
+      rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${escapeHtml(emptyDash(v))}</dd></div>`).join("") +
+      filaEquipo;
 
     const staff = profile.rol === "admin" || profile.rol === "master" || profile.rol === "staff";
     els.staffCard.hidden = !staff;
@@ -573,6 +582,44 @@
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
     els.qrDownload.setAttribute("download", `qr-${slug}.png`);
+  }
+
+  /* ---------------- Datos bancarios ---------------- */
+  async function loadBanco() {
+    const { data, error } = await sb
+      .from("configuracion")
+      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error || !data) {
+      els.datosBanco.hidden = true;
+      return;
+    }
+    const lineas = [];
+    if (data.banco || data.cuenta) {
+      lineas.push(`<strong>Transferencia</strong>
+        <span>Banco: ${escapeHtml(data.banco || "—")}</span>
+        <span>Titular: ${escapeHtml(data.titular || "—")}</span>
+        <span>Documento: ${escapeHtml(data.documento || "—")}</span>
+        <span>Cuenta ${escapeHtml(data.tipo_cuenta || "")}: ${escapeHtml(data.cuenta || "—")}</span>`);
+    }
+    if (data.pago_movil_telefono || data.pago_movil_banco) {
+      lineas.push(`<strong>Pago móvil</strong>
+        <span>Banco: ${escapeHtml(data.pago_movil_banco || "—")}</span>
+        <span>Teléfono: ${escapeHtml(data.pago_movil_telefono || "—")}</span>
+        <span>Documento: ${escapeHtml(data.pago_movil_documento || "—")}</span>`);
+    }
+    if (data.instrucciones) lineas.push(`<span class="banco-box__nota">${escapeHtml(data.instrucciones)}</span>`);
+
+    if (!lineas.length) {
+      els.datosBanco.hidden = true;
+      return;
+    }
+    els.datosBanco.innerHTML =
+      '<p class="banco-box__title">Datos para tu pago</p>' +
+      lineas.map((l) => `<div class="banco-box__item">${l}</div>`).join("");
+    els.datosBanco.hidden = false;
   }
 
   /* ---------------- Pagos ---------------- */

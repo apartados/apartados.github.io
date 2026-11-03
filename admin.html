@@ -65,6 +65,7 @@
         <button type="button" data-tab="staff">Staff</button>
         <button type="button" data-tab="equipos">Equipos</button>
         <button type="button" data-tab="habitaciones">Habitaciones</button>
+        <button type="button" data-tab="ajustes">Ajustes</button>
       </nav>
 
       <!-- Resumen -->
@@ -169,6 +170,40 @@
           <p class="form-note" id="habitacionNote" role="status"></p>
         </form>
         <div class="admin-list" id="adminHabitaciones"></div>
+      </div>
+
+      <!-- Ajustes / datos bancarios -->
+      <div class="admin-panel" id="tab-ajustes" hidden>
+        <p class="panel-muted">
+          Estos datos bancarios verán <strong>todos los participantes</strong> en su sección de pagos.
+        </p>
+        <form class="ajustes-form glass" id="bancoForm">
+          <h3 class="ajustes-sub">Transferencia</h3>
+          <div class="grid-2">
+            <div class="field"><label>Banco</label><input id="bkBanco" type="text" placeholder="Banesco" /></div>
+            <div class="field"><label>Titular</label><input id="bkTitular" type="text" placeholder="Nombre del titular" /></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Documento / RIF</label><input id="bkDocumento" type="text" placeholder="V-00000000" /></div>
+            <div class="field"><label>Tipo de cuenta</label><input id="bkTipo" type="text" placeholder="Ahorro / Corriente" /></div>
+          </div>
+          <div class="field"><label>Número de cuenta</label><input id="bkCuenta" type="text" placeholder="0102-0000-00-0000000000" /></div>
+
+          <h3 class="ajustes-sub">Pago móvil</h3>
+          <div class="grid-2">
+            <div class="field"><label>Banco</label><input id="pmBanco" type="text" placeholder="Banesco" /></div>
+            <div class="field"><label>Teléfono</label><input id="pmTelefono" type="text" placeholder="0414-0000000" /></div>
+          </div>
+          <div class="field"><label>Documento</label><input id="pmDocumento" type="text" placeholder="V-00000000" /></div>
+
+          <div class="field">
+            <label>Instrucciones adicionales (opcional)</label>
+            <textarea id="bkInstrucciones" rows="2" placeholder="Ej: enviar comprobante por Telegram"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn--primary">Guardar datos bancarios</button>
+          <p class="form-note" id="bancoNote" role="status"></p>
+        </form>
       </div>
     </section>
   </main>

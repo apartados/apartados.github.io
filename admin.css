@@ -330,3 +330,16 @@ img.mini-avatar { display: block; }
   .person { grid-template-columns: 1fr; }
   .admin-main { padding-top: 108px; }
 }
+
+.equipo-detalle { flex-basis: 100%; margin-top: 14px; }
+.ajustes-form { padding: clamp(20px, 3vw, 30px); border-radius: var(--radius); display: grid; gap: 14px; max-width: 720px; }
+.ajustes-form .field { margin-bottom: 0; }
+.ajustes-form .btn { justify-self: start; }
+.ajustes-sub {
+  margin: 6px 0 -2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}

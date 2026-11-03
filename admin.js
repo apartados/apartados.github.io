@@ -32,6 +32,12 @@
     comidaOrden: $("comidaOrden"),
     comidaNote: $("comidaNote"),
     adminComidas: $("adminComidas"),
+    bancoForm: $("bancoForm"),
+    bancoNote: $("bancoNote"),
+    bkBanco: $("bkBanco"), bkTitular: $("bkTitular"), bkDocumento: $("bkDocumento"),
+    bkTipo: $("bkTipo"), bkCuenta: $("bkCuenta"),
+    pmBanco: $("pmBanco"), pmTelefono: $("pmTelefono"), pmDocumento: $("pmDocumento"),
+    bkInstrucciones: $("bkInstrucciones"),
     equipoForm: $("equipoForm"),
     equipoNombre: $("equipoNombre"),
     equipoColor: $("equipoColor"),
@@ -57,7 +63,7 @@
     window.initSessionGuard(sb, { idleMinutes: Number(CONFIG.SESSION_IDLE_MINUTES) || 30 });
   }
 
-  const TABS = ["resumen", "pagos", "participantes", "comidas", "staff", "equipos", "habitaciones"];
+  const TABS = ["resumen", "pagos", "participantes", "comidas", "staff", "equipos", "habitaciones", "ajustes"];
   const ESTADO_LABEL = { en_revision: "Por verificar", aprobado: "Verificado", rechazado: "Rechazado" };
   const TIPO_LABEL = { pago_movil: "Pago móvil", transferencia: "Transferencia" };
   const ROL_LABEL = { participante: "Participante", lector: "Lector QR", staff: "Staff", admin: "Organizador", master: "Organizador principal" };
@@ -129,6 +135,9 @@
       els.tabs.querySelector('[data-tab="habitaciones"]').hidden = true;
       els.tabs.querySelector('[data-tab="staff"]').hidden = true;
     }
+    if (!esAdminOMaster()) {
+      els.tabs.querySelector('[data-tab="ajustes"]').hidden = true;
+    }
     // Cobranzas: solo admin y master (el staff no las ve)
     if (!esAdminOMaster()) {
       els.tabs.querySelector('[data-tab="pagos"]').hidden = true;
@@ -138,7 +147,7 @@
     bindForms();
 
     await Promise.all([loadResumen(), loadTeams(), loadRooms()]);
-    const tareas = [loadPeople(), loadComidas()];
+    const tareas = [loadPeople(), loadComidas(), loadBancoAdmin()];
     if (esAdminOMaster()) tareas.push(loadPagos());
     await Promise.all(tareas);
     renderRooms();
@@ -646,6 +655,50 @@
     await Promise.all([loadComidas(), loadResumen()]);
   }
 
+  /* ---------------- Datos bancarios ---------------- */
+  async function loadBancoAdmin() {
+    const { data, error } = await sb.from("configuracion")
+      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones")
+      .eq("id", 1).maybeSingle();
+    if (error || !data) return;
+    els.bkBanco.value = data.banco || "";
+    els.bkTitular.value = data.titular || "";
+    els.bkDocumento.value = data.documento || "";
+    els.bkTipo.value = data.tipo_cuenta || "";
+    els.bkCuenta.value = data.cuenta || "";
+    els.pmBanco.value = data.pago_movil_banco || "";
+    els.pmTelefono.value = data.pago_movil_telefono || "";
+    els.pmDocumento.value = data.pago_movil_documento || "";
+    els.bkInstrucciones.value = data.instrucciones || "";
+  }
+
+  async function guardarBanco(e) {
+    e.preventDefault();
+    const btn = els.bancoForm.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = "Guardando…";
+    const { error } = await sb.from("configuracion").update({
+      banco: els.bkBanco.value.trim() || null,
+      titular: els.bkTitular.value.trim() || null,
+      documento: els.bkDocumento.value.trim() || null,
+      tipo_cuenta: els.bkTipo.value.trim() || null,
+      cuenta: els.bkCuenta.value.trim() || null,
+      pago_movil_banco: els.pmBanco.value.trim() || null,
+      pago_movil_telefono: els.pmTelefono.value.trim() || null,
+      pago_movil_documento: els.pmDocumento.value.trim() || null,
+      instrucciones: els.bkInstrucciones.value.trim() || null,
+      actualizado_at: new Date().toISOString(),
+    }).eq("id", 1);
+    btn.disabled = false; btn.textContent = "Guardar datos bancarios";
+    if (error) {
+      els.bancoNote.textContent = `No se pudo guardar: ${error.message}`;
+      els.bancoNote.className = "form-note error";
+      return;
+    }
+    els.bancoNote.textContent = "Datos bancarios guardados.";
+    els.bancoNote.className = "form-note ok";
+    setTimeout(() => (els.bancoNote.textContent = ""), 3000);
+  }
+
   /* ---------------- Equipos ---------------- */
   async function loadTeams() {
     const { data, error } = await sb.rpc("equipos_resumen");
@@ -674,9 +727,11 @@
             <small>${t.ocupados} confirmados · ${t.pendientes} por aprobar</small>
           </div>
           <div class="admin-row__side">
+            ${esMaster() ? `<button class="btn btn--ghost btn--xs" data-miembros="${t.id}">Ver miembros</button>` : ""}
             <button class="btn btn--primary btn--xs" data-save="${t.id}">Guardar</button>
             <button class="btn btn--no btn--xs" data-del="${t.id}">Eliminar</button>
           </div>
+          <div class="equipo-detalle" id="miem-${t.id}" hidden></div>
         </div>`
       )
       .join("");
@@ -687,6 +742,33 @@
     els.adminEquipos.querySelectorAll("button[data-del]").forEach((btn) =>
       btn.addEventListener("click", () => deleteTeam(btn.dataset.del))
     );
+    els.adminEquipos.querySelectorAll("button[data-miembros]").forEach((btn) =>
+      btn.addEventListener("click", () => toggleMiembrosEquipo(btn.dataset.miembros))
+    );
+  }
+
+  async function toggleMiembrosEquipo(id) {
+    const box = document.getElementById(`miem-${id}`);
+    if (!box) return;
+    if (!box.hidden) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = '<p class="empty-note">Cargando…</p>';
+
+    const { data, error } = await sb.rpc("equipo_miembros", { p_equipo: id });
+    if (error) { box.innerHTML = `<p class="empty-note">${esc(error.message)}</p>`; return; }
+    const lista = data || [];
+    if (!lista.length) { box.innerHTML = '<p class="empty-note">Sin integrantes todavía.</p>'; return; }
+
+    box.innerHTML = `
+      <p class="panel-muted">Orden de inscripción (el 1 fue el primero). Los que pasen del cupo deben salir del equipo.</p>
+      <div class="comida-lista">
+        ${lista.map((m) => `
+          <div class="comida-persona is-no" style="background:rgba(255,255,255,0.04)">
+            <span class="comida-persona__mark" style="color:var(--amber)">${m.posicion}</span>
+            <span class="comida-persona__name">${esc(m.nombre)}</span>
+            <span class="comida-persona__team">${new Date(m.created_at).toLocaleDateString("es-VE", { day: "2-digit", month: "short", year: "2-digit" })}</span>
+          </div>`).join("")}
+      </div>`;
   }
 
   async function saveTeam(id) {
@@ -823,6 +905,8 @@
       await Promise.all([loadComidas(), loadResumen()]);
       setTimeout(() => (els.comidaNote.textContent = ""), 3000);
     });
+
+    els.bancoForm.addEventListener("submit", guardarBanco);
 
     els.habitacionForm.addEventListener("submit", async (e) => {
       e.preventDefault();
