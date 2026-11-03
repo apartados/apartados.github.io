@@ -437,3 +437,43 @@ img.mini-avatar { display: block; }
 .ficha-list div:last-child { border-bottom: 0; }
 .ficha-list dt { font-size: 0.82rem; color: var(--cream-2); flex: none; }
 .ficha-list dd { margin: 0; font-size: 0.9rem; color: var(--white); text-align: right; word-break: break-word; }
+
+/* Foto ampliada */
+.ficha-head img { cursor: zoom-in; transition: transform 0.2s ease; }
+.ficha-head img:hover { transform: scale(1.04); }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(6px);
+}
+.lightbox img {
+  max-width: min(94vw, 960px);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  object-fit: contain;
+}
+.lightbox__close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.lightbox__close:hover { background: rgba(255, 255, 255, 0.18); }

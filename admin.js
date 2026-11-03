@@ -31,6 +31,9 @@
     fichaOverlay: $("fichaOverlay"),
     fichaBody: $("fichaBody"),
     fichaClose: $("fichaClose"),
+    lightbox: $("lightbox"),
+    lightboxImg: $("lightboxImg"),
+    lightboxClose: $("lightboxClose"),
     comidaForm: $("comidaForm"),
     comidaNombre: $("comidaNombre"),
     comidaDia: $("comidaDia"),
@@ -392,11 +395,26 @@
 
     els.fichaOverlay.hidden = false;
     document.body.style.overflow = "hidden";
+
+    const fotoEl = els.fichaBody.querySelector(".ficha-head img");
+    if (fotoEl) fotoEl.addEventListener("click", () => abrirLightbox(fotoEl.src));
   }
 
   function cerrarFicha() {
     els.fichaOverlay.hidden = true;
+    cerrarLightbox();
     document.body.style.overflow = "";
+  }
+
+  function abrirLightbox(src) {
+    if (!src) return;
+    els.lightboxImg.src = src;
+    els.lightbox.hidden = false;
+  }
+
+  function cerrarLightbox() {
+    els.lightbox.hidden = true;
+    els.lightboxImg.removeAttribute("src");
   }
 
   async function setRole(personId, rol) {
@@ -476,7 +494,13 @@
       if (e.target === els.fichaOverlay) cerrarFicha();
     });
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") cerrarFicha();
+      if (e.key !== "Escape") return;
+      if (!els.lightbox.hidden) cerrarLightbox();
+      else cerrarFicha();
+    });
+    els.lightboxClose.addEventListener("click", cerrarLightbox);
+    els.lightbox.addEventListener("click", (e) => {
+      if (e.target === els.lightbox) cerrarLightbox();
     });
     els.fichaSelect.addEventListener("change", () => {
       if (els.fichaSelect.value) abrirFicha(els.fichaSelect.value);
