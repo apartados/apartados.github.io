@@ -556,3 +556,37 @@ img.info-photo__img { display: block; }
 .banco-box__item span { font-size: 0.86rem; color: var(--cream-2); }
 .banco-box__nota { font-style: italic; color: var(--cream-2); font-size: 0.84rem; }
 .info-photo__hint.is-warn { color: #ffd166; font-weight: 600; }
+
+/* Precios del aporte */
+.precio-box {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 181, 71, 0.35);
+  background: rgba(255, 140, 26, 0.07);
+}
+.precio-box__title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 2px;
+}
+.precio-box__row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.precio-box__row.is-active {
+  border-color: rgba(255, 181, 71, 0.45);
+  background: rgba(255, 181, 71, 0.08);
+}
+.precio-box__row span { font-size: 0.86rem; color: var(--cream-2); min-width: 62px; }
+.precio-box__row strong { font-size: 1.05rem; color: var(--white); }
+.precio-box__row small { margin-left: auto; font-size: 0.78rem; color: var(--cream-2); }

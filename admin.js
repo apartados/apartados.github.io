@@ -46,6 +46,8 @@
     bkTipo: $("bkTipo"), bkCuenta: $("bkCuenta"),
     pmBanco: $("pmBanco"), pmTelefono: $("pmTelefono"), pmDocumento: $("pmDocumento"),
     bkInstrucciones: $("bkInstrucciones"),
+    tasaDolar: $("tasaDolar"), tasaInfo: $("tasaInfo"),
+    parte1Usd: $("parte1Usd"), parte2Usd: $("parte2Usd"),
     equipoForm: $("equipoForm"),
     equipoNombre: $("equipoNombre"),
     equipoColor: $("equipoColor"),
@@ -771,7 +773,7 @@
   /* ---------------- Datos bancarios ---------------- */
   async function loadBancoAdmin() {
     const { data, error } = await sb.from("configuracion")
-      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones")
+      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones, tasa_dolar, monto_parte1_usd, monto_parte2_usd, tasa_actualizada_at")
       .eq("id", 1).maybeSingle();
     if (error || !data) return;
     els.bkBanco.value = data.banco || "";
@@ -783,6 +785,12 @@
     els.pmTelefono.value = data.pago_movil_telefono || "";
     els.pmDocumento.value = data.pago_movil_documento || "";
     els.bkInstrucciones.value = data.instrucciones || "";
+    els.tasaDolar.value = data.tasa_dolar ?? "";
+    els.parte1Usd.value = data.monto_parte1_usd ?? 20;
+    els.parte2Usd.value = data.monto_parte2_usd ?? 15;
+    els.tasaInfo.value = data.tasa_actualizada_at
+      ? new Date(data.tasa_actualizada_at).toLocaleString("es-VE")
+      : "Sin definir";
   }
 
   async function guardarBanco(e) {
@@ -799,6 +807,10 @@
       pago_movil_telefono: els.pmTelefono.value.trim() || null,
       pago_movil_documento: els.pmDocumento.value.trim() || null,
       instrucciones: els.bkInstrucciones.value.trim() || null,
+      tasa_dolar: els.tasaDolar.value.trim() === "" ? null : Number(els.tasaDolar.value),
+      monto_parte1_usd: Number(els.parte1Usd.value) || 20,
+      monto_parte2_usd: Number(els.parte2Usd.value) || 15,
+      tasa_actualizada_at: new Date().toISOString(),
       actualizado_at: new Date().toISOString(),
     }).eq("id", 1);
     btn.disabled = false; btn.textContent = "Guardar datos bancarios";

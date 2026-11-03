@@ -44,6 +44,7 @@
     pagosBadge: document.getElementById("pagosBadge"),
     pagoEstado: document.getElementById("pagoEstado"),
     datosBanco: document.getElementById("datosBanco"),
+    precioBox: document.getElementById("precioBox"),
     panelBurger: document.getElementById("panelBurger"),
     panelSide: document.getElementById("panelSide"),
     panelOverlay: document.getElementById("panelOverlay"),
@@ -365,6 +366,9 @@
 
   /* ---------------- Equipos ---------------- */
   let teams = [];
+  let cfgTasa = null;
+  let cfgParte1 = 20;
+  let cfgParte2 = 15;
 
   async function loadTeams() {
     const { data, error } = await sb.rpc("equipos_resumen");
@@ -583,9 +587,19 @@
   async function loadBanco() {
     const { data, error } = await sb
       .from("configuracion")
-      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones")
+      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones, tasa_dolar, monto_parte1_usd, monto_parte2_usd")
       .eq("id", 1)
       .maybeSingle();
+
+    if (error || !data) {
+      els.datosBanco.hidden = true;
+    } else {
+      cfgTasa = data.tasa_dolar !== null && data.tasa_dolar !== undefined ? Number(data.tasa_dolar) : null;
+      cfgParte1 = Number(data.monto_parte1_usd || 20);
+      cfgParte2 = Number(data.monto_parte2_usd || 15);
+      pintarPrecios();
+      aplicarPrecio();
+    }
 
     if (error || !data) {
       els.datosBanco.hidden = true;
@@ -615,6 +629,45 @@
       '<p class="banco-box__title">Datos para tu pago</p>' +
       lineas.map((l) => `<div class="banco-box__item">${l}</div>`).join("");
     els.datosBanco.hidden = false;
+  }
+
+  function formatoBs(n) {
+    return "Bs " + Number(n).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function pintarPrecios() {
+    if (!cfgTasa) {
+      els.precioBox.hidden = true;
+      return;
+    }
+    const p1 = cfgParte1 * cfgTasa;
+    const p2 = cfgParte2 * cfgTasa;
+    els.precioBox.innerHTML = `
+      <p class="precio-box__title">Montos del aporte (tasa Bs ${cfgTasa.toLocaleString("es-VE", { minimumFractionDigits: 2 })})</p>
+      <div class="precio-box__row" data-parte="1">
+        <span>Parte 1</span><strong>${formatoBs(p1)}</strong><small>$${cfgParte1.toFixed(2)}</small>
+      </div>
+      <div class="precio-box__row" data-parte="2">
+        <span>Parte 2</span><strong>${formatoBs(p2)}</strong><small>$${cfgParte2.toFixed(2)}</small>
+      </div>`;
+    els.precioBox.hidden = false;
+    marcarParte();
+  }
+
+  function marcarParte() {
+    const parte = String(els.pagoParte.value);
+    els.precioBox.querySelectorAll(".precio-box__row").forEach((r) =>
+      r.classList.toggle("is-active", r.dataset.parte === parte)
+    );
+  }
+
+  function aplicarPrecio() {
+    if (!cfgTasa) return;
+    const parte = Number(els.pagoParte.value);
+    const usd = parte === 2 ? cfgParte2 : cfgParte1;
+    const bs = usd * cfgTasa;
+    els.pagoMonto.value = bs.toFixed(2);
+    marcarParte();
   }
 
   /* ---------------- Pagos ---------------- */
@@ -728,6 +781,9 @@
     });
   }
 
+  els.pagoParte.addEventListener("change", aplicarPrecio);
+  els.pagoMonto.addEventListener("input", marcarParte);
+
   els.pagoArchivo.addEventListener("change", () => {
     const file = els.pagoArchivo.files[0];
     els.pagoPreview.hidden = true;
@@ -790,6 +846,7 @@
       banco_origen: banco,
       referencia,
       monto: monto === "" ? null : Number(monto),
+      tasa_dolar: cfgTasa,
       comprobante_path: path,
     });
 
