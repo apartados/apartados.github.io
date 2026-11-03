@@ -590,3 +590,37 @@ img.info-photo__img { display: block; }
 .precio-box__row span { font-size: 0.86rem; color: var(--cream-2); min-width: 62px; }
 .precio-box__row strong { font-size: 1.05rem; color: var(--white); }
 .precio-box__row small { margin-left: auto; font-size: 0.78rem; color: var(--cream-2); }
+
+/* Fechas de pago */
+.fechas-box {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+.fechas-box__title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 2px;
+}
+.fechas-box__row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.fechas-box__name { font-size: 0.86rem; color: var(--cream-2); min-width: 62px; }
+.fechas-box__row strong { font-size: 0.92rem; color: var(--white); }
+.fechas-box__estado {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.fechas-box__estado--ok { color: #9dffb0; background: rgba(120,255,160,0.12); border: 1px solid rgba(120,255,160,0.3); }
+.fechas-box__estado--warn { color: #ffd166; background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.3); }
+.fechas-box__estado--no { color: #ff9a9a; background: rgba(255,120,120,0.12); border: 1px solid rgba(255,120,120,0.3); }

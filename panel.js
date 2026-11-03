@@ -45,6 +45,7 @@
     pagoEstado: document.getElementById("pagoEstado"),
     datosBanco: document.getElementById("datosBanco"),
     precioBox: document.getElementById("precioBox"),
+    fechasPago: document.getElementById("fechasPago"),
     panelBurger: document.getElementById("panelBurger"),
     panelSide: document.getElementById("panelSide"),
     panelOverlay: document.getElementById("panelOverlay"),
@@ -587,7 +588,7 @@
   async function loadBanco() {
     const { data, error } = await sb
       .from("configuracion")
-      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones, tasa_dolar, monto_parte1_usd, monto_parte2_usd")
+      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones, tasa_dolar, monto_parte1_usd, monto_parte2_usd, pago1_desde, pago1_hasta, pago2_desde, pago2_hasta")
       .eq("id", 1)
       .maybeSingle();
 
@@ -599,6 +600,7 @@
       cfgParte2 = Number(data.monto_parte2_usd || 15);
       pintarPrecios();
       aplicarPrecio();
+      pintarFechas(data);
     }
 
     if (error || !data) {
@@ -629,6 +631,51 @@
       '<p class="banco-box__title">Datos para tu pago</p>' +
       lineas.map((l) => `<div class="banco-box__item">${l}</div>`).join("");
     els.datosBanco.hidden = false;
+  }
+
+  function parseFecha(s) {
+    if (!s) return null;
+    const [y, m, d] = String(s).split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function fmtFechaCorta(d) {
+    return d ? d.toLocaleDateString("es-VE", { day: "numeric", month: "long" }) : "—";
+  }
+
+  function estadoRango(desde, hasta) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    if (desde && hoy < desde) return { txt: "Próximamente", cls: "warn" };
+    if (hasta && hoy > hasta) return { txt: "Cerrado", cls: "no" };
+    if (desde && hasta) return { txt: "Abierto", cls: "ok" };
+    return { txt: "", cls: "" };
+  }
+
+  function pintarFechas(data) {
+    const rangos = [
+      ["Parte 1", parseFecha(data.pago1_desde), parseFecha(data.pago1_hasta)],
+      ["Parte 2", parseFecha(data.pago2_desde), parseFecha(data.pago2_hasta)],
+    ].filter(([, d, h]) => d || h);
+
+    if (!rangos.length) {
+      els.fechasPago.hidden = true;
+      return;
+    }
+    els.fechasPago.innerHTML =
+      '<p class="fechas-box__title">Fechas de pago</p>' +
+      rangos
+        .map(([nombre, d, h]) => {
+          const est = estadoRango(d, h);
+          const rango = `${fmtFechaCorta(d)} al ${fmtFechaCorta(h)}`;
+          return `<div class="fechas-box__row">
+            <span class="fechas-box__name">${nombre}</span>
+            <strong>${rango}</strong>
+            <span class="fechas-box__estado fechas-box__estado--${est.cls}">${est.txt}</span>
+          </div>`;
+        })
+        .join("");
+    els.fechasPago.hidden = false;
   }
 
   function formatoBs(n) {

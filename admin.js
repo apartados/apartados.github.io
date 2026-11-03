@@ -48,6 +48,8 @@
     bkInstrucciones: $("bkInstrucciones"),
     tasaDolar: $("tasaDolar"), tasaInfo: $("tasaInfo"),
     parte1Usd: $("parte1Usd"), parte2Usd: $("parte2Usd"),
+    pago1Desde: $("pago1Desde"), pago1Hasta: $("pago1Hasta"),
+    pago2Desde: $("pago2Desde"), pago2Hasta: $("pago2Hasta"),
     equipoForm: $("equipoForm"),
     equipoNombre: $("equipoNombre"),
     equipoColor: $("equipoColor"),
@@ -773,7 +775,7 @@
   /* ---------------- Datos bancarios ---------------- */
   async function loadBancoAdmin() {
     const { data, error } = await sb.from("configuracion")
-      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones, tasa_dolar, monto_parte1_usd, monto_parte2_usd, tasa_actualizada_at")
+      .select("banco, titular, documento, cuenta, tipo_cuenta, pago_movil_banco, pago_movil_telefono, pago_movil_documento, instrucciones, tasa_dolar, monto_parte1_usd, monto_parte2_usd, tasa_actualizada_at, pago1_desde, pago1_hasta, pago2_desde, pago2_hasta")
       .eq("id", 1).maybeSingle();
     if (error || !data) return;
     els.bkBanco.value = data.banco || "";
@@ -791,6 +793,10 @@
     els.tasaInfo.value = data.tasa_actualizada_at
       ? new Date(data.tasa_actualizada_at).toLocaleString("es-VE")
       : "Sin definir";
+    els.pago1Desde.value = data.pago1_desde || "";
+    els.pago1Hasta.value = data.pago1_hasta || "";
+    els.pago2Desde.value = data.pago2_desde || "";
+    els.pago2Hasta.value = data.pago2_hasta || "";
   }
 
   async function guardarBanco(e) {
@@ -811,6 +817,10 @@
       monto_parte1_usd: Number(els.parte1Usd.value) || 20,
       monto_parte2_usd: Number(els.parte2Usd.value) || 15,
       tasa_actualizada_at: new Date().toISOString(),
+      pago1_desde: els.pago1Desde.value || null,
+      pago1_hasta: els.pago1Hasta.value || null,
+      pago2_desde: els.pago2Desde.value || null,
+      pago2_hasta: els.pago2Hasta.value || null,
       actualizado_at: new Date().toISOString(),
     }).eq("id", 1);
     btn.disabled = false; btn.textContent = "Guardar datos bancarios";
