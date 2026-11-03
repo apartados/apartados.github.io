@@ -393,21 +393,17 @@
 
     const aprobado = teams.find((t) => t.id === profile.equipo_id);
     const pendiente = teams.find((t) => t.id === profile.equipo_pendiente_id);
+    const bloqueado = Boolean(aprobado || pendiente);
 
-    if (pendiente) {
+    if (aprobado) {
+      els.teamBadge.textContent = aprobado.nombre;
+      setMessage(els.teamNote, "Equipo confirmado. Tu elección es definitiva; solo el organizador puede cambiarla.", null);
+    } else if (pendiente) {
       els.teamBadge.textContent = "Por aprobar";
-      els.teamNote.innerHTML =
-        `Solicitaste <strong>${escapeHtml(pendiente.nombre)}</strong>. Un organizador debe aprobarlo. ` +
-        `<button type="button" class="link-btn" id="cancelarSolicitud">Cancelar solicitud</button>`;
-      els.teamNote.className = "form-note";
-      const cancel = document.getElementById("cancelarSolicitud");
-      if (cancel) cancel.addEventListener("click", cancelarSolicitud);
+      setMessage(els.teamNote, `Solicitaste ${pendiente.nombre}. Espera la aprobación del organizador; ya no puedes elegir otro.`, null);
     } else {
-      els.teamBadge.textContent = aprobado ? aprobado.nombre : "Sin elegir";
-      els.teamNote.textContent = aprobado
-        ? "Equipo confirmado por el organizador."
-        : "";
-      els.teamNote.className = "form-note";
+      els.teamBadge.textContent = "Sin elegir";
+      setMessage(els.teamNote, "Elige tu color. Es definitivo: una vez elegido no podrás cambiarlo tú mismo.", null);
     }
 
     els.teamGrid.innerHTML = teams
@@ -415,12 +411,12 @@
         const esAprobado = t.id === profile.equipo_id;
         const esPendiente = t.id === profile.equipo_pendiente_id;
         const llenos = t.cupo > 0 ? t.ocupados + t.pendientes : 0;
-        const full = t.cupo > 0 && llenos >= t.cupo && !esAprobado && !esPendiente;
+        const lleno = t.cupo > 0 && llenos >= t.cupo && !esAprobado && !esPendiente;
         const cupo = t.cupo > 0 ? `${t.ocupados}/${t.cupo}` : `${t.ocupados} confirmados`;
-        const detalle = esAprobado ? "Tu equipo" : esPendiente ? "Solicitado" : full ? "Completo" : cupo;
+        const detalle = esAprobado ? "Tu equipo" : esPendiente ? "Solicitado" : lleno ? "Completo" : cupo;
         return `
           <button type="button" class="team-option ${esAprobado ? "is-mine" : ""} ${esPendiente ? "is-pending" : ""}"
-                  data-team="${t.id}" ${full ? "disabled" : ""}>
+                  data-team="${t.id}" ${bloqueado || lleno ? "disabled" : ""}>
             <span class="team-dot" style="background:${escapeHtml(t.color)}"></span>
             <strong>${escapeHtml(t.nombre)}</strong>
             <small>${detalle}</small>
@@ -428,12 +424,19 @@
       })
       .join("");
 
-    els.teamGrid.querySelectorAll(".team-option").forEach((btn) => {
-      btn.addEventListener("click", () => solicitarEquipo(btn.dataset.team));
-    });
+    if (!bloqueado) {
+      els.teamGrid.querySelectorAll(".team-option").forEach((btn) => {
+        btn.addEventListener("click", () => confirmarEleccion(btn.dataset.team));
+      });
+    }
   }
 
-  async function solicitarEquipo(teamId) {
+  async function confirmarEleccion(teamId) {
+    const equipo = teams.find((t) => t.id === teamId);
+    const nombre = equipo ? equipo.nombre : "este equipo";
+    if (!confirm(`¿Confirmas ${nombre}? Una vez elegido no podrás cambiarte; solo el organizador puede hacerlo.`)) {
+      return;
+    }
     setMessage(els.teamNote, "Enviando tu solicitud…", null);
     els.teamGrid.querySelectorAll(".team-option").forEach((b) => (b.disabled = true));
 
@@ -441,20 +444,10 @@
 
     if (error) {
       console.error("[panel] solicitar_equipo", error);
-      setMessage(els.teamNote, error.message || "No se pudo enviar la solicitud.", "error");
+      setMessage(els.teamNote, error.message || "No se pudo elegir el equipo.", "error");
     } else {
       await refreshProfile();
     }
-    await loadTeams();
-  }
-
-  async function cancelarSolicitud() {
-    const { error } = await sb.rpc("cancelar_solicitud_equipo");
-    if (error) {
-      setMessage(els.teamNote, error.message, "error");
-      return;
-    }
-    await refreshProfile();
     await loadTeams();
   }
 
