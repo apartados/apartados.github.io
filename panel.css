@@ -555,3 +555,4 @@ img.info-photo__img { display: block; }
 .banco-box__item strong { color: var(--white); font-size: 0.92rem; }
 .banco-box__item span { font-size: 0.86rem; color: var(--cream-2); }
 .banco-box__nota { font-style: italic; color: var(--cream-2); font-size: 0.84rem; }
+.info-photo__hint.is-warn { color: #ffd166; font-weight: 600; }

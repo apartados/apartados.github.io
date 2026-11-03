@@ -672,3 +672,29 @@ p { margin: 0; }
   .hero { padding-top: 120px; }
   .footer__meta span:last-child { margin-left: 0; }
 }
+
+/* Foto obligatoria en el registro */
+.req { color: var(--amber); font-weight: 500; }
+.field input[type="file"] {
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.field input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--cream);
+  font-family: var(--font);
+  font-weight: 600;
+  cursor: pointer;
+}
+.file-preview { margin-top: 12px; }
+.file-preview img {
+  max-width: 130px;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 2px solid rgba(255, 181, 71, 0.45);
+}

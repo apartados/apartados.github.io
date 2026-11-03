@@ -287,6 +287,13 @@
             <textarea id="notas" name="notas" rows="2" placeholder="Opcional"></textarea>
           </div>
 
+          <div class="field">
+            <label for="foto">Foto de perfil <span class="req">(obligatoria)</span></label>
+            <input id="foto" name="foto" type="file" accept="image/png,image/jpeg,image/webp" required />
+            <small class="error"></small>
+            <div class="file-preview" id="fotoPreview" hidden></div>
+          </div>
+
           <label class="check">
             <input type="checkbox" id="acepto" required />
             <span>Acepto los <a href="terminos.html" target="_blank" rel="noopener">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank" rel="noopener">Política de Privacidad</a>, las normas del retiro, la creación de mi cuenta con este correo y el uso de mi información para la organización del evento.</span>

@@ -84,6 +84,31 @@ function validateField(input) {
   return true;
 }
 
+const fotoInput = document.getElementById("foto");
+const fotoPreview = document.getElementById("fotoPreview");
+
+if (fotoInput) {
+  fotoInput.addEventListener("change", () => {
+    fotoPreview.innerHTML = "";
+    fotoPreview.hidden = true;
+    const file = fotoInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setNote("La foto debe ser una imagen (JPG, PNG o WebP).", "error");
+      fotoInput.value = "";
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setNote("La foto supera los 3 MB.", "error");
+      fotoInput.value = "";
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    fotoPreview.innerHTML = `<img src="${url}" alt="Vista previa de tu foto" />`;
+    fotoPreview.hidden = false;
+  });
+}
+
 form.querySelectorAll("input, select").forEach((input) => {
   input.addEventListener("blur", () => {
     if (rules[input.name]) validateField(input);
@@ -112,7 +137,25 @@ form.addEventListener("submit", async (event) => {
   aceptoError.style.display = acepto.checked ? "none" : "block";
   aceptoError.textContent = acepto.checked ? "" : "Debes aceptar las normas del retiro.";
 
-  if (!valid || !acepto.checked) {
+  const foto = fotoInput ? fotoInput.files[0] : null;
+  const fotoError = fotoInput ? fotoInput.closest(".field").querySelector(".error") : null;
+  let fotoValida = true;
+  if (!foto) {
+    fotoValida = false;
+    if (fotoError) fotoError.textContent = "La foto de perfil es obligatoria.";
+    if (fotoInput) fotoInput.closest(".field").classList.add("invalid");
+  } else if (!foto.type.startsWith("image/")) {
+    fotoValida = false;
+    if (fotoError) fotoError.textContent = "Sube una imagen (JPG, PNG o WebP).";
+  } else if (foto.size > 3 * 1024 * 1024) {
+    fotoValida = false;
+    if (fotoError) fotoError.textContent = "La foto supera los 3 MB.";
+  } else if (fotoError) {
+    fotoInput.closest(".field").classList.remove("invalid");
+    fotoError.textContent = "";
+  }
+
+  if (!valid || !acepto.checked || !fotoValida) {
     setNote("Revisa los campos marcados en rojo.", "error");
     form.querySelector(".invalid input, .invalid select")?.focus();
     return;
@@ -165,10 +208,38 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
+  // Subir la foto de perfil (obligatoria)
+  let fotoSubida = true;
+  try {
+    const { data: sesion } = await sb.auth.getSession();
+    const uid = sesion?.session?.user?.id;
+    if (uid && foto) {
+      const ext = (foto.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const ruta = `${uid}/avatar-${Date.now()}.${ext}`;
+      const { error: upError } = await sb.storage
+        .from("avatares")
+        .upload(ruta, foto, { contentType: foto.type || undefined, upsert: true });
+      if (!upError) {
+        await sb.rpc("actualizar_avatar", { p_path: ruta });
+      } else {
+        fotoSubida = false;
+        console.error("[registro] foto", upError);
+      }
+    }
+  } catch (err) {
+    fotoSubida = false;
+    console.error("[registro] foto", err);
+  }
+
   const primerNombre = nombre.split(" ")[0];
-  setNote(`¡Listo, ${primerNombre}! Tu cuenta está creada. Te llevamos a tu panel…`, "ok");
+  setNote(
+    fotoSubida
+      ? `¡Listo, ${primerNombre}! Tu cuenta está creada. Te llevamos a tu panel…`
+      : `¡Listo, ${primerNombre}! Tu cuenta está creada, pero la foto no se pudo subir. Súbela desde tu panel.`,
+    "ok"
+  );
   form.reset();
   setTimeout(() => {
     window.location.href = "panel.html";
-  }, 1400);
+  }, 1600);
 });

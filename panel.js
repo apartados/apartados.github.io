@@ -204,6 +204,7 @@
       els.btnQuitarFoto.hidden = false;
       els.infoPhotoHint.textContent = "Foto de perfil cargada.";
       els.infoPhotoHint.classList.add("is-ok");
+      els.infoPhotoHint.classList.remove("is-warn");
     } else {
       els.avatarImg.hidden = true;
       els.avatarImg.removeAttribute("src");
@@ -215,8 +216,9 @@
       els.infoPhotoIni.hidden = false;
 
       els.btnQuitarFoto.hidden = true;
-      els.infoPhotoHint.textContent = "No has subido una foto.";
+      els.infoPhotoHint.textContent = "No has subido una foto. Súbela para que te identifiquen.";
       els.infoPhotoHint.classList.remove("is-ok");
+      els.infoPhotoHint.classList.add("is-warn");
     }
   }
 
