@@ -183,6 +183,10 @@
         </p>
         <form class="ajustes-form glass" id="bancoForm">
           <h3 class="ajustes-sub">Tasa y montos del aporte</h3>
+          <p class="ajustes-hint">
+            Los cambios se guardan con el botón <strong>Guardar ajustes</strong> al final. Al guardar la
+            tasa, todos los participantes verán el monto en bolívares actualizado.
+          </p>
           <div class="grid-2">
             <div class="field"><label>Tasa del dólar (Bs por $1)</label><input id="tasaDolar" type="number" min="0" step="0.01" placeholder="Ej: 50,00" /></div>
             <div class="field"><label>Actualizada</label><input id="tasaInfo" type="text" disabled /></div>
@@ -224,7 +228,7 @@
             <textarea id="bkInstrucciones" rows="2" placeholder="Ej: enviar comprobante por Telegram"></textarea>
           </div>
 
-          <button type="submit" class="btn btn--primary">Guardar datos bancarios</button>
+          <button type="submit" class="btn btn--primary">Guardar ajustes</button>
           <p class="form-note" id="bancoNote" role="status"></p>
         </form>
       </div>

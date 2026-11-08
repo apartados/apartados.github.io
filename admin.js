@@ -823,13 +823,13 @@
       pago2_hasta: els.pago2Hasta.value || null,
       actualizado_at: new Date().toISOString(),
     }).eq("id", 1);
-    btn.disabled = false; btn.textContent = "Guardar datos bancarios";
+    btn.disabled = false; btn.textContent = "Guardar ajustes";
     if (error) {
       els.bancoNote.textContent = `No se pudo guardar: ${error.message}`;
       els.bancoNote.className = "form-note error";
       return;
     }
-    els.bancoNote.textContent = "Datos bancarios guardados.";
+    els.bancoNote.textContent = "Ajustes guardados (tasa, montos, fechas y datos bancarios).";
     els.bancoNote.className = "form-note ok";
     setTimeout(() => (els.bancoNote.textContent = ""), 3000);
   }

@@ -477,3 +477,11 @@ img.mini-avatar { display: block; }
   cursor: pointer;
 }
 .lightbox__close:hover { background: rgba(255, 255, 255, 0.18); }
+.ajustes-hint {
+  font-size: 0.85rem;
+  color: var(--cream-2);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 140, 26, 0.08);
+  border: 1px dashed rgba(255, 181, 71, 0.35);
+}
