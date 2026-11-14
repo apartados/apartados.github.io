@@ -395,13 +395,62 @@
       </div>
       <dl class="ficha-list">
         ${filas.map(([k, v]) => `<div><dt>${k}</dt><dd>${v === null || v === undefined || v === "" ? "—" : (k === "Equipo" ? v : esc(v))}</dd></div>`).join("")}
-      </dl>`;
+      </dl>
+
+      <div class="ficha-pass">
+        <h3>Contraseña</h3>
+        <p class="ficha-pass__note">
+          Por seguridad la contraseña actual está <strong>cifrada y no se puede ver</strong>.
+          Puedes asignar una nueva y dársela al usuario.
+        </p>
+        <div class="ficha-pass__row">
+          <input type="text" id="fichaNewPass" placeholder="Nueva contraseña (mín. 8)" autocomplete="off" />
+          <button type="button" class="btn btn--ghost btn--xs" id="fichaGenPass">Generar</button>
+          <button type="button" class="btn btn--primary btn--xs" id="fichaSetPass">Restablecer</button>
+        </div>
+        <p class="form-note" id="fichaPassNote" role="status"></p>
+      </div>`;
 
     els.fichaOverlay.hidden = false;
     document.body.style.overflow = "hidden";
 
     const fotoEl = els.fichaBody.querySelector(".ficha-head img");
     if (fotoEl) fotoEl.addEventListener("click", () => abrirLightbox(fotoEl.src));
+
+    const passInput = document.getElementById("fichaNewPass");
+    document.getElementById("fichaGenPass").addEventListener("click", () => {
+      passInput.value = generarClave();
+      passInput.focus();
+    });
+    document.getElementById("fichaSetPass").addEventListener("click", () => {
+      restablecerPassword(id, passInput.value);
+    });
+  }
+
+  function generarClave() {
+    const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    for (let i = 0; i < 10; i++) out += abc[Math.floor(Math.random() * abc.length)];
+    return out;
+  }
+
+  async function restablecerPassword(id, pass) {
+    const note = document.getElementById("fichaPassNote");
+    if (!pass || pass.length < 8) {
+      note.textContent = "La contraseña debe tener al menos 8 caracteres.";
+      note.className = "form-note error";
+      return;
+    }
+    note.textContent = "Guardando…";
+    note.className = "form-note";
+    const { error } = await sb.rpc("restablecer_password", { p_id: id, p_password: pass });
+    if (error) {
+      note.textContent = `No se pudo restablecer: ${error.message}`;
+      note.className = "form-note error";
+      return;
+    }
+    note.innerHTML = `Contraseña actualizada. Compártela con el usuario: <strong>${esc(pass)}</strong>`;
+    note.className = "form-note ok";
   }
 
   function cerrarFicha() {

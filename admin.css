@@ -485,3 +485,31 @@ img.mini-avatar { display: block; }
   background: rgba(255, 140, 26, 0.08);
   border: 1px dashed rgba(255, 181, 71, 0.35);
 }
+
+/* Contraseña en la ficha */
+.ficha-pass {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ficha-pass h3 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+.ficha-pass__note { font-size: 0.84rem; color: var(--cream-2); margin-bottom: 12px; line-height: 1.5; }
+.ficha-pass__row { display: flex; flex-wrap: wrap; gap: 8px; }
+.ficha-pass__row input {
+  flex: 1 1 180px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 0.9rem;
+}
+#fichaPassNote { margin-top: 10px; min-height: 0; }
